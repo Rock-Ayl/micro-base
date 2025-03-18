@@ -64,6 +64,8 @@ public class JSONResponse {
         //组装error
         response.response.put(KEY_CODE, 500);
         response.response.put(KEY_ERROR_MSG, e.getMessage());
+        response.response.put(KEY_ERROR_LOCAL_MSG, e.getLocalizedMessage());
+        response.response.put(KEY_ERROR_MSG_STRING, e.toString());
         //返回
         return response;
     }
