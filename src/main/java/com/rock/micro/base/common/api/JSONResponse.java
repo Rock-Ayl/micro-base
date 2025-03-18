@@ -8,7 +8,7 @@ import java.util.Map;
 import static com.rock.micro.base.common.constant.JSONConst.*;
 
 /**
- * 响应内容封装器,方便控制层组装返回
+ * 响应内容封装器,方便控制层组装返回.
  *
  * @Author ayl
  * @Date 2022-03-09
