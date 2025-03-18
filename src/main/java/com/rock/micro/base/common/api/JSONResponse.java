@@ -1,6 +1,7 @@
 package com.rock.micro.base.common.api;
 
-import com.rock.micro.base.util.JacksonExtraUtils;
+import com.alibaba.fastjson.JSONObject;
+import com.rock.micro.base.util.FastJsonExtraUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class JSONResponse {
         //判空
         if (e.getMessage() != null) {
             //转为json并组装
-            response.response.put(KEY_ERROR_MSG, JacksonExtraUtils.toJSONString(e.getMessage()));
+            response.response.put(KEY_ERROR_MSG, FastJsonExtraUtils.deepClone(e.getMessage(), JSONObject.class));
         }
         //返回
         return response;
@@ -105,7 +106,7 @@ public class JSONResponse {
     @Override
     public String toString() {
         //实现
-        return JacksonExtraUtils.toJSONString(this.response);
+        return FastJsonExtraUtils.toJSONString(this.response);
     }
 
 }
