@@ -48,7 +48,7 @@ public class JSONResponse {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR);
+        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR.getCode());
         //返回
         return response;
     }
@@ -63,7 +63,7 @@ public class JSONResponse {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR);
+        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR.getCode());
         //判空
         if (e != null) {
             //转为json并组装
