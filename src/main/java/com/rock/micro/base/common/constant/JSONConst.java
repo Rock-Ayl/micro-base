@@ -14,8 +14,6 @@ public class JSONConst {
 
     public static final String KEY_CODE = "code";
     public static final String KEY_ERROR_MSG = "errorMsg";
-    public static final String KEY_ERROR_LOCAL_MSG = "errorLocalizedMsg";
-    public static final String KEY_ERROR_MSG_STRING = "errorString";
     public static final String KEY_RESULT = "result";
 
     /**

@@ -63,9 +63,11 @@ public class JSONResponse {
         JSONResponse response = new JSONResponse();
         //组装error
         response.response.put(KEY_CODE, 500);
-        response.response.put(KEY_ERROR_MSG, e.getMessage());
-        response.response.put(KEY_ERROR_LOCAL_MSG, e.getLocalizedMessage());
-        response.response.put(KEY_ERROR_MSG_STRING, e.toString());
+        //判空
+        if (e.getMessage() != null) {
+            //转为json并组装
+            response.response.put(KEY_ERROR_MSG, JacksonExtraUtils.toJSONString(e.getMessage()));
+        }
         //返回
         return response;
     }
