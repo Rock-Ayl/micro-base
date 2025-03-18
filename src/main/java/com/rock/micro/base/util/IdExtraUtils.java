@@ -13,7 +13,7 @@ import java.util.UUID;
 public class IdExtraUtils {
 
     /**
-     * 生成一个GUID
+     * 生成无连字符的 UUID
      *
      * @return
      */
