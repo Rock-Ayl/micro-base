@@ -1,4 +1,4 @@
-package com.rock.micro.base.common.util;
+package com.rock.micro.base.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JacksonException;

@@ -1,6 +1,6 @@
 package com.rock.micro.base.common.api;
 
-import com.rock.micro.base.common.util.JacksonExtraUtils;
+import com.rock.micro.base.util.JacksonExtraUtils;
 
 import java.util.HashMap;
 import java.util.Map;
