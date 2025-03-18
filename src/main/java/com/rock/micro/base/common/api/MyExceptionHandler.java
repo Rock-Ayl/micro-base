@@ -20,7 +20,7 @@ public class MyExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = Throwable.class)
     public Object exceptionHandler(Throwable e) {
-        LOG.error("exceptionHandler catch error:", e);
+        LOG.error("MyExceptionHandler catch error:", e);
         //返回统一异常返回
         return JSONResponse.error(e).toString();
     }
