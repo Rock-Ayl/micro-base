@@ -21,6 +21,8 @@ public enum HttpStatusEnum {
     FORBIDDEN(403, "Forbidden", "该请求被禁止访问"),
     NOT_FOUND(404, "Not Found", "无法找到该请求的内容"),
 
+    INTERNAL_SERVER_ERROR(500, "Internal Server Error", "未完成的请求,服务器遇到了一个意外的情况。"),
+
     ;
 
     //代码

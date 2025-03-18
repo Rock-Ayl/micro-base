@@ -1,5 +1,6 @@
 package com.rock.micro.base.common.api;
 
+import com.rock.micro.base.common.enums.HttpStatusEnum;
 import com.rock.micro.base.util.FastJsonExtraUtils;
 
 import java.util.HashMap;
@@ -47,7 +48,7 @@ public class JSONResponse {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, 500);
+        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR);
         //返回
         return response;
     }
@@ -62,7 +63,7 @@ public class JSONResponse {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, 500);
+        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR);
         //判空
         if (e != null) {
             //转为json并组装
