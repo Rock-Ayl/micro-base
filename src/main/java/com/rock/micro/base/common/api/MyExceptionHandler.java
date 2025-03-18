@@ -22,7 +22,7 @@ public class MyExceptionHandler {
     public Object exceptionHandler(Throwable e) {
         LOG.error("exceptionHandler catch error:", e);
         //返回统一异常返回
-        return JSONResponse.error(e);
+        return JSONResponse.error(e).toString();
     }
 
 }
