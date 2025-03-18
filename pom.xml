@@ -7,6 +7,7 @@
     <groupId>com.rock</groupId>
     <artifactId>micro-base</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <!-- 使用的是springboot 2.6.4 -->
     <parent>
@@ -16,10 +17,25 @@
         <relativePath/>
     </parent>
 
+    <!-- 属性 -->
     <properties>
         <!-- 指定全局 language level 版本 -->
         <maven.compiler.release>8</maven.compiler.release>
     </properties>
+
+    <!-- 配置发布到Nexus的地址 -->
+    <distributionManagement>
+        <!-- 正式 -->
+        <repository>
+            <id>nexus-releases</id>
+            <url>http://127.0.0.1:8081/repository/maven-releases/</url>
+        </repository>
+        <!-- 快照 -->
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <url>http://127.0.0.1:8081/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencies>
 
