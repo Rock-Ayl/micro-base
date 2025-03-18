@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 用户实体
+ * 用户登录信息
  *
  * @Author ayl
  * @Date 2022-03-13
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @ApiModel("用户实体")
-public class UserDO extends BaseDO {
+public class User extends BaseDO {
 
     @ApiModelProperty("名称")
     private String name;

@@ -1,6 +1,6 @@
 package com.rock.micro.base.common.auth;
 
-import com.rock.micro.base.data.UserDO;
+import com.rock.micro.base.data.User;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,6 +17,6 @@ import java.lang.annotation.Target;
 public @interface LoginAuth {
 
     //登录成功时,这里承载着该线程的用户信息
-    ThreadLocal<UserDO> USER = new ThreadLocal<>();
+    ThreadLocal<User> USER = new ThreadLocal<>();
 
 }

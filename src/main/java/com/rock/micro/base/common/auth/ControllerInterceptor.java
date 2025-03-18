@@ -3,7 +3,7 @@ package com.rock.micro.base.common.auth;
 import com.rock.micro.base.common.constant.HttpConst;
 import com.rock.micro.base.common.constant.RedisKey;
 import com.rock.micro.base.common.enums.HttpStatusEnum;
-import com.rock.micro.base.data.UserDO;
+import com.rock.micro.base.data.User;
 import com.rock.micro.base.db.redis.BaseRedisService;
 import com.rock.micro.base.util.FastJsonExtraUtils;
 import com.rock.micro.base.util.UserExtraUtils;
@@ -95,16 +95,16 @@ public class ControllerInterceptor implements HandlerInterceptor {
         //获取token
         String token = request.getHeader(HttpConst.REQUEST_HEADERS_TOKEN);
         //获取用户信息
-        UserDO userDO = getUserFromCache(token);
+        User user = getUserFromCache(token);
         //如果拿不到用户信息
-        if (userDO == null) {
+        if (user == null) {
             //未知请求直接过滤
             sendError(response, HttpStatusEnum.UNAUTHORIZED);
             //不过
             return false;
         }
         //记录用户信息
-        LoginAuth.USER.set(userDO);
+        LoginAuth.USER.set(user);
 
         /**
          * 默认通过请求
@@ -120,7 +120,7 @@ public class ControllerInterceptor implements HandlerInterceptor {
      * @param token Token
      * @return
      */
-    private UserDO getUserFromCache(String token) {
+    private User getUserFromCache(String token) {
         //判空
         if (StringUtils.isBlank(token)) {
             //过
@@ -136,11 +136,11 @@ public class ControllerInterceptor implements HandlerInterceptor {
             return null;
         }
         //获取用户信息
-        UserDO userDO = FastJsonExtraUtils.deepClone(userInfo, UserDO.class);
+        User user = FastJsonExtraUtils.deepClone(userInfo, User.class);
         //用户实体脱敏
-        UserExtraUtils.desensitization(userDO);
+        UserExtraUtils.desensitization(user);
         //返回
-        return userDO;
+        return user;
     }
 
     /**
