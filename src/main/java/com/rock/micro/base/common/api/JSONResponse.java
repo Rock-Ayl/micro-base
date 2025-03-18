@@ -1,6 +1,5 @@
 package com.rock.micro.base.common.api;
 
-import com.alibaba.fastjson.JSONObject;
 import com.rock.micro.base.util.FastJsonExtraUtils;
 
 import java.util.HashMap;
@@ -65,9 +64,9 @@ public class JSONResponse {
         //组装error
         response.response.put(KEY_CODE, 500);
         //判空
-        if (e.getMessage() != null) {
+        if (e != null) {
             //转为json并组装
-            response.response.put(KEY_ERROR_MSG, FastJsonExtraUtils.deepClone(e.getMessage(), JSONObject.class));
+            response.response.put(KEY_ERROR_MSG, e.getMessage());
         }
         //返回
         return response;
