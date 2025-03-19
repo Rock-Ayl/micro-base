@@ -6,7 +6,7 @@
 
     <groupId>com.rock</groupId>
     <artifactId>micro-base</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <!-- 使用的是springboot 2.6.4 -->
@@ -21,6 +21,10 @@
     <properties>
         <!-- 指定全局 language level 版本 -->
         <maven.compiler.release>8</maven.compiler.release>
+        <!-- 打包指定版本 -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <!-- 配置发布到Nexus的地址 -->
