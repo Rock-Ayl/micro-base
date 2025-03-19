@@ -1,4 +1,4 @@
-package com.rock.micro.base.db.redis;
+package com.rock.micro.base.common.redis;
 
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
