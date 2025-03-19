@@ -1,7 +1,5 @@
 package com.rock.micro.base.util;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.UUID;
 
 /**
@@ -19,21 +17,6 @@ public class IdExtraUtils {
      */
     public static String genGUID() {
         return UUID.randomUUID().toString().replace("-", "");
-    }
-
-    /**
-     * 生成一个用户简单的token
-     *
-     * @return
-     */
-    public static String creatUserToken(String userId) {
-        //判空
-        if (StringUtils.isBlank(userId)) {
-            //过
-            return "";
-        }
-        //组装并返回
-        return userId + ":" + System.currentTimeMillis() + ":" + genGUID();
     }
 
 }
