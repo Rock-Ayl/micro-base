@@ -124,7 +124,7 @@ public interface BaseMongoService<T extends BaseDocument> {
      *
      * @param document 实体
      */
-    void CreateOrUpdateSkipNullById(T document);
+    void createOrUpdateSkipNullById(T document);
 
     /**
      * 根据实体列表,使用id,批量创建或更新多个实体,跳过NULL的字段
