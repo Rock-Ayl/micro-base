@@ -1,10 +1,10 @@
 package com.rock.micro.base.common.api;
 
-import com.rock.micro.base.common.enums.HttpStatusEnum;
 import com.rock.micro.base.util.FastJsonExtraUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.rock.micro.base.common.constant.JSONConst.*;
 
@@ -48,7 +48,8 @@ public class JSONResponse {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR.getCode());
+        response.response.put(KEY_CODE, 500);
+        response.response.put(KEY_ERROR_MSG, "接口请求异常");
         //返回
         return response;
     }
@@ -60,15 +61,35 @@ public class JSONResponse {
      * @return
      */
     public static JSONResponse error(Throwable e) {
+        //初始化z
+        JSONResponse response = new JSONResponse();
+        //组装error
+        response.response.put(KEY_CODE, 500);
+        response.response.put(KEY_ERROR_MSG, Optional.ofNullable(e)
+                .map(Throwable::getMessage)
+                .orElse("接口请求异常")
+        );
+        //返回
+        return response;
+    }
+
+    /**
+     * 失败+msg
+     *
+     * @param e
+     * @return
+     */
+    public static JSONResponse error(MyException e) {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, HttpStatusEnum.INTERNAL_SERVER_ERROR.getCode());
-        //判空
-        if (e != null) {
-            //转为json并组装
-            response.response.put(KEY_ERROR_MSG, e.getMessage());
-        }
+        response.response.put(KEY_CODE, Optional.ofNullable(e)
+                .map(MyException::getMyExtCode)
+                .orElse(500));
+        response.response.put(KEY_ERROR_MSG, Optional.ofNullable(e)
+                .map(MyException::getMessage)
+                .orElse("接口请求异常")
+        );
         //返回
         return response;
     }
