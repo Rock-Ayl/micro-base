@@ -33,8 +33,6 @@ public class JSONResponse {
     public static JSONResponse success() {
         //初始化
         JSONResponse response = new JSONResponse();
-        //组装success
-        response.response.put(KEY_CODE, VALUE_SUCCESS);
         //返回
         return response;
     }
@@ -48,7 +46,7 @@ public class JSONResponse {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, 500);
+        response.response.put(KEY_ERROR_CODE, 500);
         response.response.put(KEY_ERROR_MSG, "接口请求异常");
         //返回
         return response;
@@ -64,7 +62,7 @@ public class JSONResponse {
         //初始化z
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, 500);
+        response.response.put(KEY_ERROR_CODE, 500);
         response.response.put(KEY_ERROR_MSG, Optional.ofNullable(e)
                 .map(Throwable::getMessage)
                 .orElse("接口请求异常")
@@ -83,7 +81,7 @@ public class JSONResponse {
         //初始化
         JSONResponse response = new JSONResponse();
         //组装error
-        response.response.put(KEY_CODE, Optional.ofNullable(e)
+        response.response.put(KEY_ERROR_CODE, Optional.ofNullable(e)
                 .map(MyException::getMyExtCode)
                 .orElse(500));
         response.response.put(KEY_ERROR_MSG, Optional.ofNullable(e)
