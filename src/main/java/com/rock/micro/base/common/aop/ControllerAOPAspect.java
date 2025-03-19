@@ -51,12 +51,7 @@ public class ControllerAOPAspect {
     @Around("controllerPointcut()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
         LOG.info("ControllerAspect do around before...");
-        Object result = null;
-        try {
-            result = joinPoint.proceed();
-        } catch (Exception e) {
-            LOG.error("do around 执行目标函数, 内部发生异常");
-        }
+        Object result = joinPoint.proceed();
         LOG.info("ControllerAspect do around after...");
         return result;
     }
