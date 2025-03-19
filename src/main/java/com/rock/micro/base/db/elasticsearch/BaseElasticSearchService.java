@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
-import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.springframework.data.elasticsearch.core.AggregationsContainer;
 
 import java.util.Collection;
 import java.util.List;
@@ -99,7 +99,7 @@ public interface BaseElasticSearchService<T extends BaseIndex> {
         //数据
         private List<T> list;
         //聚合搜索内容(有待更新)
-        private Aggregations aggregations;
+        private AggregationsContainer aggregations;
 
     }
 
