@@ -264,6 +264,12 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
     }
 
     @Override
+    public void CreateOrUpdateSkipNullById(T document) {
+        //实现
+        batchCreateOrUpdateSkipNullById(Arrays.asList(document));
+    }
+
+    @Override
     public void batchCreateOrUpdateSkipNullById(Collection<T> documentList) {
 
         /**

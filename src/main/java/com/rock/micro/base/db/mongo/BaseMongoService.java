@@ -120,6 +120,13 @@ public interface BaseMongoService<T extends BaseDocument> {
     boolean batchUpdateSkipNullById(Collection<T> documentList);
 
     /**
+     * 根据实体,使用id,创建或更新实体,跳过NULL的字段
+     *
+     * @param document 实体
+     */
+    void CreateOrUpdateSkipNullById(T document);
+
+    /**
      * 根据实体列表,使用id,批量创建或更新多个实体,跳过NULL的字段
      *
      * @param documentList 实体列表
