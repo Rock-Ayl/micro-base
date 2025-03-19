@@ -1,5 +1,6 @@
 package com.rock.micro.base.common.api;
 
+import org.apache.dubbo.rpc.RpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,7 +21,15 @@ public class MyExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = Throwable.class)
     public Object exceptionHandler(Throwable e) {
-        LOG.error("MyExceptionHandler catch error:", e);
+        LOG.error("MyExceptionHandler catch Throwable error:", e);
+        //返回统一异常返回
+        return JSONResponse.error(e).toString();
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = RpcException.class)
+    public Object exceptionHandler(RpcException e) {
+        LOG.error("MyExceptionHandler catch RpcException error:", e);
         //返回统一异常返回
         return JSONResponse.error(e).toString();
     }
