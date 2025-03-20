@@ -12,6 +12,7 @@ public class JSONConst {
      * key
      */
 
+    public static final String KEY_STATE = "state";
     public static final String KEY_ERROR_CODE = "errorCode";
     public static final String KEY_ERROR_MSG = "errorMsg";
     public static final String KEY_RESULT = "result";
