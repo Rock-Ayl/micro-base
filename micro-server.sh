@@ -73,10 +73,10 @@ start(){
         source /etc/profile
 
         # 执行java -jar 正常启动服务
-        # nohup java -jar $APP_NAME > /dev/null 2>&1 &
+        nohup java -jar $APP_NAME > /dev/null 2>&1 &
 
         # 执行java -jar 正常启动服务,并强行指定配置文件
-        nohup java -Xms256m -Xmx512m -jar $APP_NAME --spring.config.location=file:./application.properties > /dev/null 2>&1 &
+        # nohup java -Xms256m -Xmx512m -jar $APP_NAME --spring.config.location=file:./application.properties > /dev/null 2>&1 &
 
         # 检查pid
         checkPID
