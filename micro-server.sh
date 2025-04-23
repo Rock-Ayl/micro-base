@@ -67,8 +67,17 @@ start(){
         # 输出启动信息
         echo "${APP_NAME} 已经启动,PID:${pid}"
     else
+
+        # 加载全局环境变量(否则通过ssh执行脚本,无法找到java命令)
+        # 如果通过ssh执行该脚本,需要执行,如果不通过ssh,可以省略
+        source /etc/profile
+
         # 执行java -jar 正常启动服务
-        nohup java -jar $APP_NAME > /dev/null 2>&1 &
+        # nohup java -jar $APP_NAME > /dev/null 2>&1 &
+
+        # 执行java -jar 正常启动服务,并强行指定配置文件
+        nohup java -Xms256m -Xmx512m -jar $APP_NAME --spring.config.location=file:./application.properties > /dev/null 2>&1 &
+
         # 检查pid
         checkPID
         # 输出
