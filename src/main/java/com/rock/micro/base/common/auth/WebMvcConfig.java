@@ -25,4 +25,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         return new ControllerInterceptor();
     }
 
+    /**
+     * 配置跨域,本项目在 nginx 配置了,所以这里不配置
+     */
+
 }

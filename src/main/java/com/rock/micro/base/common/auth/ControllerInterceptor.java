@@ -2,9 +2,9 @@ package com.rock.micro.base.common.auth;
 
 import com.rock.micro.base.common.constant.HttpConst;
 import com.rock.micro.base.common.constant.RedisKey;
-import com.rock.micro.base.common.enums.HttpStatusEnum;
 import com.rock.micro.base.data.User;
 import com.rock.micro.base.db.redis.BaseRedisService;
+import com.rock.micro.base.util.DualIpExtraUtils;
 import com.rock.micro.base.util.FastJsonExtraUtils;
 import com.rock.micro.base.util.UserExtraUtils;
 import io.swagger.annotations.ApiModelProperty;
@@ -82,29 +82,38 @@ public class ControllerInterceptor implements HandlerInterceptor {
         }
 
         /**
-         * 登录信息
+         * IP 信息
+         */
+
+        //解析请求ip,并记录
+        LoginAuth.IP.set(DualIpExtraUtils.getDualIp(request));
+
+        /**
+         * 登录 信息
          */
 
         //获取该请求上的登录注解
         LoginAuth loginAuth = handlerMethod.getMethod().getAnnotation(LoginAuth.class);
-        //如果不存在注解,可直接登录
-        if (loginAuth == null) {
-            //通过
-            return true;
-        }
         //获取token
         String token = request.getHeader(HttpConst.REQUEST_HEADERS_TOKEN);
         //获取用户信息
         User user = getUserFromCache(token);
-        //如果拿不到用户信息
-        if (user == null) {
+        //记录用户信息
+        LoginAuth.USER.set(user);
+
+        //todo 异步记录 ip 与 用户的关系
+
+        /**
+         * 登录认证检测
+         */
+
+        //如果 接口必须登录 and 拿不到用户信息
+        if (loginAuth != null && user == null) {
             //未知请求直接过滤
             sendError(response, HttpStatusEnum.UNAUTHORIZED);
             //不过
             return false;
         }
-        //记录用户信息
-        LoginAuth.USER.set(user);
 
         /**
          * 默认通过请求
@@ -126,6 +135,34 @@ public class ControllerInterceptor implements HandlerInterceptor {
             //过
             return null;
         }
+
+        /**
+         * 拆解token,看看是不是用户的最新token,老token视为失效
+         */
+
+        //拆解token
+        UserExtraUtils.TokenObject tokenObject = UserExtraUtils.cutToken(token);
+        //获取用户id
+        String userId = tokenObject.getUserId();
+        //判空
+        if (StringUtils.isBlank(userId)) {
+            //过
+            return null;
+        }
+        //组装对应key
+        String redisUserIdKey = RedisKey.USER_LOGIN_AUTH_SET_USER_USER_ID_WITH_TOKEN + userId;
+        //获取该用户有效token
+        String userIdToken = baseRedisService.getString(redisUserIdKey);
+        //如果与有效token不匹配
+        if (token.equals(userIdToken) == false) {
+            //过
+            return null;
+        }
+
+        /**
+         * 用 token 去拿 用户信息
+         */
+
         //组装redis key
         String redisUserTokenKey = RedisKey.USER_LOGIN_AUTH_SET + token;
         //获取用户信息
@@ -139,6 +176,11 @@ public class ControllerInterceptor implements HandlerInterceptor {
         User user = FastJsonExtraUtils.deepClone(userInfo, User.class);
         //用户实体脱敏
         UserExtraUtils.desensitization(user);
+
+        /**
+         * 返回
+         */
+
         //返回
         return user;
     }

@@ -20,6 +20,9 @@ public class RedisKey {
      */
 
     //用户登录信息缓存
-    public final static String USER_LOGIN_AUTH_SET = "USER:LOGIN:AUTH_SET:";
+    public final static String USER_LOGIN_AUTH_SET = "USER:USER:LOGIN_AUTH_SET:INFO:";
+
+    //用户登录 token 与 用户id 的匹配关系,一个用户id,只允许有一个有效用户登录信息存在
+    public final static String USER_LOGIN_AUTH_SET_USER_USER_ID_WITH_TOKEN = "USER:USER:LOGIN_AUTH_SET:USER_ID_WITH_TOKEN:";
 
 }

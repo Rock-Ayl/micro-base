@@ -13,9 +13,14 @@ public class JSONConst {
      */
 
     public static final String KEY_STATE = "state";
-    public static final String KEY_ERROR_CODE = "errorCode";
+    public static final String KEY_CODE = "code";
+
     public static final String KEY_ERROR_MSG = "errorMsg";
+    public static final String KEY_ERROR_BODY = "errorBody";
+
     public static final String KEY_RESULT = "result";
+
+    public static final String KEY_PORT = "port";
 
     /**
      * value
