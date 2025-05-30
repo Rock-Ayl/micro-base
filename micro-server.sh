@@ -81,8 +81,7 @@ start(){
         # 检查pid
         checkPID
         # 输出
-        echo "${APP_NAME} 启动成功."
-        echo "${APP_NAME} PID:${pid}"
+        echo "${APP_NAME} 启动成功,PID:${pid}"
     fi
 }
 
