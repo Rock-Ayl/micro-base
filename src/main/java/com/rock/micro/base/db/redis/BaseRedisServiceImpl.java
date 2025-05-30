@@ -126,6 +126,22 @@ public final class BaseRedisServiceImpl implements BaseRedisService {
     }
 
     @Override
+    public long incr(String key, long delta, long time) {
+        if (delta <= 0L) {
+            throw new RuntimeException("递增因子必须大于0");
+        }
+        //incr
+        Long increment = redisTemplate.opsForValue().increment(key, delta);
+        //如果未设置过期时间
+        if (increment <= 1L) {
+            //设置过期时间
+            redisTemplate.expire(key, time, TimeUnit.SECONDS);
+        }
+        //返回
+        return increment;
+    }
+
+    @Override
     public long decr(String key, long delta) {
         if (delta < 0L) {
             throw new RuntimeException("递减因子必须大于0");

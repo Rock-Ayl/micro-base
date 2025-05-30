@@ -87,6 +87,17 @@ public interface BaseRedisService {
     long incr(String key, long delta);
 
     /**
+     * 自增,并设置过期时间(有风险,2次操作,并非事务性)
+     *
+     * @param key   键
+     * @param delta 要增加几(大于0)
+     * @return
+     * @Deprecated 之所以废弃, 就是因为是非原子性操作, 使用时慎用
+     */
+    @Deprecated
+    long incr(String key, long delta, long time);
+
+    /**
      * 递减
      *
      * @param key   键
