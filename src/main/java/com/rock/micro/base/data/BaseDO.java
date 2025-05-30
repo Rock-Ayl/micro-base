@@ -38,20 +38,29 @@ public class BaseDO implements Serializable {
      * @param baseDO 基类
      */
     public static <T extends BaseDO> void createBuild(T baseDO) {
+        //默认覆盖id实现
+        createBuild(baseDO, true);
+    }
 
+    /**
+     * 给新增数据的基底赋予基础数据
+     *
+     * @param baseDO 基类
+     */
+    public static <T extends BaseDO> void createBuild(T baseDO, boolean coveringId) {
         //判空
         if (baseDO == null) {
             //过
             return;
         }
-
         //创建、更新时间
         baseDO.setCreateDate(new Date());
         baseDO.setUpdateDate(new Date());
-
-        //统一id
-        baseDO.setId(IdExtraUtils.genGUID());
-
+        //如果覆盖id
+        if (coveringId == true) {
+            //统一覆盖id
+            baseDO.setId(IdExtraUtils.genGUID());
+        }
     }
 
     /**
@@ -60,16 +69,13 @@ public class BaseDO implements Serializable {
      * @param baseDO 基类
      */
     public static <T extends BaseDO> void updateBuild(T baseDO) {
-
         //判空
         if (baseDO == null) {
             //过
             return;
         }
-
         //更新时间
         baseDO.setUpdateDate(new Date());
-
     }
 
 }
