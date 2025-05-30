@@ -1,6 +1,8 @@
 package com.rock.micro.base.db.elasticsearch;
 
 import com.rock.micro.base.data.BaseIndex;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -85,20 +87,18 @@ public interface BaseElasticSearchService<T extends BaseIndex> {
      */
     void batchUpdateSkipNull(List<T> indexList);
 
-    /**
-     * 查询响应对象实体
-     *
-     * @param <T>
-     */
     @Getter
     @Setter
+    @ApiModel("ES查询响应对象实体")
     class RollPageResult<T> {
 
-        //总数
+        @ApiModelProperty("总数")
         private long total;
-        //数据
+
+        @ApiModelProperty("数据列表")
         private List<T> list;
-        //聚合搜索内容(有待更新)
+
+        @ApiModelProperty("聚合搜索内容(有待更新)")
         private AggregationsContainer aggregations;
 
     }
