@@ -12,6 +12,8 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 /**
  * Knife4j 3 配置(Swagger配置)
+ * 地址举例：
+ * http://192.168.50.95:50500//doc.html#/home
  *
  * @Author ayl
  * @Date 2022-03-26
