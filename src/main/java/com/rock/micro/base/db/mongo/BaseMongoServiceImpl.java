@@ -70,19 +70,31 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
 
     @Override
     public T create(T document) {
+        //实现,默认覆盖id
+        return create(document, true);
+    }
+
+    @Override
+    public T create(T document, boolean coveringId) {
         //判空
         if (document == null) {
             //过
             return null;
         }
         //创建前初始化
-        BaseDocument.createBuild(document);
+        BaseDocument.createBuild(document, coveringId);
         //插入
         return this.mongoTemplate.insert(document);
     }
 
     @Override
     public List<T> create(Collection<T> documentList) {
+        //实现,默认覆盖id
+        return create(documentList, true);
+    }
+
+    @Override
+    public List<T> create(Collection<T> documentList, boolean coveringId) {
         //判空
         if (CollectionUtils.isEmpty(documentList)) {
             //过
@@ -98,7 +110,7 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
                 continue;
             }
             //创建前初始化
-            BaseDocument.createBuild(document);
+            BaseDocument.createBuild(document, coveringId);
             //记录
             insertList.add(document);
         }
@@ -322,7 +334,7 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
              */
 
             //初始化更新及基类
-            Update update = MongoExtraUtils.initUpsertAndBase(id);
+            Update update = MongoExtraUtils.initUpsertAndBase(id, document.getClass());
 
             //更新字段
             MongoExtraUtils.updateSkipNullByDocumentNoExtends(update, document);

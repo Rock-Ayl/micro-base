@@ -1,7 +1,10 @@
 package com.rock.micro.base.db.mongo;
 
 import com.rock.micro.base.data.BaseDocument;
-import lombok.Data;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.Collection;
@@ -18,18 +21,36 @@ public interface BaseMongoService<T extends BaseDocument> {
     /**
      * 单个创建
      *
-     * @param document
+     * @param document 实体
      * @return
      */
     T create(T document);
 
     /**
+     * 单个创建
+     *
+     * @param document   实体
+     * @param coveringId 是否覆盖id
+     * @return
+     */
+    T create(T document, boolean coveringId);
+
+    /**
      * 批量创建
      *
-     * @param documentList
+     * @param documentList 实体 列表
      * @return
      */
     List<T> create(Collection<T> documentList);
+
+    /**
+     * 批量创建
+     *
+     * @param documentList 实体 列表
+     * @param coveringId   是否覆盖id
+     * @return
+     */
+    List<T> create(Collection<T> documentList, boolean coveringId);
 
     /**
      * 根据id,查询单个
@@ -133,85 +154,88 @@ public interface BaseMongoService<T extends BaseDocument> {
      */
     void batchCreateOrUpdateSkipNullById(Collection<T> documentList);
 
-    /**
-     * Mongo常用模板查询参数
-     */
-
-    @Data
+    @Getter
+    @Setter
+    @ApiModel("Mongo常用模板查询参数")
     public static class MongoRollPageParam {
 
         /**
-         * id
+         * 限制 id
          */
 
-        //限制id 1
+        @ApiModelProperty("限制id 1")
         private String ids;
-        //限制id 2
+
+        @ApiModelProperty("限制id 2")
         private List<String> idList;
 
         /**
          * 限制时间区间
          */
 
-        //限制时间类型
+        @ApiModelProperty("限制时间类型")
         private String timeType;
-        //开始时间
+
+        @ApiModelProperty("开始时间")
         private Long startTime;
-        //结束时间
+
+        @ApiModelProperty("结束时间")
         private Long endTime;
 
         /**
          * 限制关键词
          */
 
-        //精确/模糊搜索
+        @ApiModelProperty("精确/模糊搜索[exact=精确][dim=简单模糊(性能高效果差)][complexDim=精确模糊(性能差效果好)]")
         private String searchType;
-        //关键字搜索类型
+
+        @ApiModelProperty("关键字搜索类型")
         private String keywordType;
-        //关键字列表
+
+        @ApiModelProperty("关键字列表")
         private List<String> keywordList;
 
         /**
          * 分页
          */
 
-        //分页
+        @ApiModelProperty("分页-数量")
         private Integer pageSize;
+
+        @ApiModelProperty("分页-页码")
         private Integer pageNum;
 
-        //是否需要count(尽量不用,能省则省)
+        @ApiModelProperty("是否需要count(尽量不用,性能能省则省)")
         private Boolean needCount;
 
         /**
          * 排序
          */
 
-        //排序字段
+        @ApiModelProperty("排序-key")
         private String sortKey;
-        //正序还是倒叙
+
+        @ApiModelProperty("排序-正序 or 倒序 [desc][asc]")
         private String sortOrder;
 
         /**
          * 限制返回字段
          */
 
-        //限制返回字段
+        @ApiModelProperty("限制返回字段 eg: id,name,sku,tags")
         private String fields;
 
     }
 
-    /**
-     * 查询响应对象实体
-     *
-     * @param <T>
-     */
-    @Data
+    @Getter
+    @Setter
+    @ApiModel("Mongo查询响应对象实体")
     public static class RollPageResult<T> {
 
-        //总数
+        @ApiModelProperty("总数")
         private Long total;
 
-        //数据
+        @ApiModelProperty("数据列表")
         private List<T> list;
 
     }

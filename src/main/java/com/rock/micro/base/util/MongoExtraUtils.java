@@ -5,15 +5,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,6 +104,24 @@ public class MongoExtraUtils {
     }
 
     /**
+     * 为 mongo {@link Query} 设置常用分页
+     *
+     * @param query     查询条件
+     * @param sortOrder 排序-规则枚举
+     * @param sortKey   排序-key
+     * @return
+     */
+    public static <T1, R1> void setSort(Query query, Sort.Direction sortOrder, LambdaParseFieldNameExtraUtils.MFunction<T1, R1> sortKey) {
+        //判空
+        if (query == null || sortOrder == null || sortKey == null) {
+            //过
+            return;
+        }
+        //指定排序
+        query.with(Sort.by(sortOrder, LambdaParseFieldNameExtraUtils.getMongoColumn(sortKey)));
+    }
+
+    /**
      * 为 mongo Query 操作 初始化一个关于基类的 {@link Query}
      *
      * @param id 主键id
@@ -154,10 +170,11 @@ public class MongoExtraUtils {
     /**
      * 为 mongo upsert 操作 初始化一个关于基类的 {@link Update}
      *
-     * @param id 主键id
+     * @param id    主键id
+     * @param clazz 要映射的类
      * @return
      */
-    public static Update initUpsertAndBase(String id) {
+    public static Update initUpsertAndBase(String id, Class<?> clazz) {
         //初始化更新实体
         Update update = new Update();
 
@@ -167,6 +184,8 @@ public class MongoExtraUtils {
         update.setOnInsert("createDate", new Date());
         //仅创建是否删除
         update.setOnInsert("del", false);
+        //映射class
+        update.setOnInsert("_class", clazz.getName());
 
         //固定创建或更新最后更新时间
         update.set("updateDate", new Date());
@@ -217,6 +236,20 @@ public class MongoExtraUtils {
      * @return
      */
     public static <T extends BaseDocument> void updateSkipNullByDocumentNoExtends(Update update, T document) {
+        //实现
+        updateSkipNullByDocumentNoExtends(update, document, null);
+    }
+
+    /**
+     * 根据实体,为 mongo {@link Update} set 该实体所有不为空的字段
+     * 注意:不包含继承对象的参数
+     *
+     * @param update             要update的对象
+     * @param document           实体
+     * @param onInsertFieldsList 指定需要 onInsert 的字段,如果这些字段不为空,则仅在创建处理,选填
+     * @return
+     */
+    public static <T extends BaseDocument> void updateSkipNullByDocumentNoExtends(Update update, T document, Collection<String> onInsertFieldsList) {
         //判空
         if (update == null || document == null) {
             //过
@@ -228,6 +261,13 @@ public class MongoExtraUtils {
         if (fields == null || fields.length < 1) {
             //过
             return;
+        }
+        //初始化 onInsert 字段集合
+        Set<String> onInsertSet = new HashSet<>();
+        //如果存在指定 onInsert 的字段
+        if (CollectionUtils.isNotEmpty(onInsertFieldsList)) {
+            //加入所有
+            onInsertSet.addAll(onInsertFieldsList);
         }
         //循环
         for (Field field : fields) {
@@ -256,8 +296,14 @@ public class MongoExtraUtils {
                 Object value = field.get(document);
                 //判空
                 if (value != null) {
-                    //组装
-                    update.set(fieldName, value);
+                    //如果仅创建更新
+                    if (onInsertSet.contains(fieldName)) {
+                        //设置仅创建更新
+                        update.setOnInsert(fieldName, value);
+                    } else {
+                        //创建或更新都更新
+                        update.set(fieldName, value);
+                    }
                 }
             } catch (Exception e) {
                 LOG.error("updateSkipNullByDocumentNoExtends error", e);
