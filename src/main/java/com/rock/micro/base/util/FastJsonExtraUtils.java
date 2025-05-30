@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -151,6 +152,149 @@ public class FastJsonExtraUtils {
         }
         //返回
         return result;
+    }
+
+    /**
+     * 获取json指定路径下的对象
+     *
+     * @param json 实体对象  深度嵌套对象
+     * @param path 路径     用.切割 eg: [path=product.skuList.sku]
+     * @return
+     */
+    public static Object getPathObject(JSONObject json, String path) {
+        //实现,返回第一个
+        return getPathList(json, path)
+                .stream()
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 获取json指定路径下的对象
+     *
+     * @param json         实体对象  深度嵌套对象
+     * @param path         路径     用.切割 eg: [path=product.skuList.sku]
+     * @param toJavaObject 指定强转的对象
+     * @return
+     */
+    public static <T> T getPathObject(JSONObject json, String path, Class<T> toJavaObject) {
+        //实现,返回第一个
+        return getPathList(json, path, toJavaObject)
+                .stream()
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 获取json指定路径下的对象列表
+     *
+     * @param json         实体对象  深度嵌套对象
+     * @param path         路径     用.切割 eg: [path=product.skuList.sku]
+     * @param toJavaObject 指定强转的对象
+     * @return
+     */
+    public static <T> List<T> getPathList(JSONObject json, String path, Class<T> toJavaObject) {
+        //收集结果
+        List<Object> collectList = getPathList(json, path);
+        //初始化结果列表
+        List<T> resultList = new ArrayList<>();
+        //循环
+        for (Object object : collectList) {
+            //强转
+            resultList.add(toJavaObject.cast(object));
+        }
+        //返回
+        return resultList;
+    }
+
+    /**
+     * 获取json指定路径下的对象列表
+     *
+     * @param json 实体对象  深度嵌套对象
+     * @param path 路径     用.切割 eg: [path=product.skuList.sku]
+     * @return
+     */
+    public static List<Object> getPathList(JSONObject json, String path) {
+        //判空
+        if (json == null || path == null) {
+            //过
+            return new ArrayList<>();
+        }
+        //拆分路径
+        String[] pathArr = path.split("\\.");
+        //初始化结果列表
+        List<Object> collectList = new ArrayList<>();
+        //递归、不断拆解并组装至结果
+        getPathArr(collectList, json, pathArr, 0);
+        //返回
+        return collectList;
+    }
+
+    /**
+     * 递归,获取json指定路径下的对象列表实现
+     *
+     * @param resultList 结果集
+     * @param json       递归的深度嵌套对象
+     * @param pathArr    路径数组
+     * @param index      路径数组的索引
+     */
+    private static void getPathArr(List<Object> resultList, JSONObject json, String[] pathArr, int index) {
+        //判空
+        if (json == null || index >= pathArr.length) {
+            //过
+            return;
+        }
+        //获取当前key
+        String key = pathArr[index];
+        //判空
+        if (key == null) {
+            //过
+            return;
+        }
+        //获取对应对象
+        Object object = json.get(key);
+        //判空
+        if (object == null) {
+            //过
+            return;
+        }
+        //如果是目标对象
+        if (index == pathArr.length - 1) {
+            //组装结果
+            resultList.add(object);
+            //过
+            return;
+        }
+        //如果是json对象
+        if (object instanceof JSONObject) {
+            //递归
+            getPathArr(resultList, (JSONObject) object, pathArr, index + 1);
+            //过
+            return;
+        }
+        //如果是集合
+        if (object instanceof Collection) {
+            //转为集合,循环
+            for (Object next : (Collection) object) {
+                //如果是json对象
+                if (next instanceof JSONObject) {
+                    //递归
+                    getPathArr(resultList, (JSONObject) next, pathArr, index + 1);
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        String str = "{\"ProductId\":14551,\"ProductStyle\":\"POD55l9o\",\"propertyList\":[{\"detailList\":[{\"isSelect\":true,\"IsMissing\":true,\"InputList\":null,\"PropertyDetailId\":0,\"DetailName\":33222,\"PropertyId\":1,\"RelatedPropertyId\":0,\"InputNames\":\"\"}],\"SpecCode\":\"Spec3\",\"PropertyId\":1,\"PropertyType\":1,\"PropertyName\":\"jfwoehj\",\"Desc\":\"13121\",\"ImageLink\":\"/UploadFiles/79/ProductProperty/自动化1(2).png\",\"VideoLink\":\"/UploadFiles/79/ProductProperty/oceans(7).mp4\",\"ValidStatus\":1,\"CreateTime\":\"2025-04-09T16:41:33.43\",\"CreatorId\":79,\"UpdateTime\":\"2025-04-10T17:03:10.577\",\"UpdaterId\":79}],\"variationList\":[{\"erpProductVariationValues\":[{\"ProductVariationValueId\":132880,\"ProductVariationId\":20847,\"VariationValue\":\"Beige\",\"ListOrder\":1,\"ProductId\":14551,\"VariationTitle\":\"颜色\",\"VariationItem\":\"Spec1\"}],\"ProductVariationId\":20847,\"ProductId\":14551,\"VariationTitle\":\"颜色\",\"ListOrder\":1,\"VariationItem\":\"Spec1\"},{\"erpProductVariationValues\":[{\"ProductVariationValueId\":132882,\"ProductVariationId\":20848,\"VariationValue\":\"XS\",\"ListOrder\":1,\"ProductId\":14551,\"VariationTitle\":\"尺寸\",\"VariationItem\":\"Spec2\"}],\"ProductVariationId\":20848,\"ProductId\":14551,\"VariationTitle\":\"尺寸\",\"ListOrder\":2,\"VariationItem\":\"Spec2\"}]}";
+        //转为json
+        JSONObject json = deepClone(str, JSONObject.class);
+        //尝试收集
+        List<Object> path = getPathList(json, "variationList.erpProductVariationValues.VariationTitle");
+        List<String> path2 = getPathList(json, "variationList.erpProductVariationValues.VariationTitle", String.class);
+        Object path3 = getPathObject(json, "variationList.erpProductVariationValues.VariationTitle");
+        String path4 = getPathObject(json, "variationList.erpProductVariationValues.VariationTitle", String.class);
+        System.out.println();
     }
 
 }
