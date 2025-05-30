@@ -73,6 +73,8 @@ public class LambdaParseFieldNameExtraUtils {
 
     /**
      * 根据Lambda表达式,获取 字段 名称,为 Mongo 特化处理
+     * -
+     * 小驼峰
      *
      * @param func 函数式接口，例：User::getId()
      * @param <T>  泛型T
@@ -93,6 +95,37 @@ public class LambdaParseFieldNameExtraUtils {
                 //直接返回
                 return column;
         }
+    }
+
+    /**
+     * 根据Lambda表达式,获取 字段 名称,为 Mongo 特化处理
+     * -
+     * 大驼峰
+     *
+     * @param func 函数式接口，例：User::getId()
+     * @param <T>  泛型T
+     * @param <R>  泛型R
+     * @return 字段名
+     */
+    public static <T, R> String getMongoColumnBigHump(MFunction<T, R> func) {
+        //用小驼峰实现,转为大驼峰,返回
+        return capitalizeFirstLetter(getMongoColumn(func));
+    }
+
+    /**
+     * 强制让字符串第一个字母大写
+     *
+     * @param input 字符串
+     * @return
+     */
+    private static String capitalizeFirstLetter(String input) {
+        //判空
+        if (input == null || input.isEmpty()) {
+            //过
+            return input;
+        }
+        //首字母大写 + 剩余部分原样拼接
+        return Character.toUpperCase(input.charAt(0)) + input.substring(1);
     }
 
     /**

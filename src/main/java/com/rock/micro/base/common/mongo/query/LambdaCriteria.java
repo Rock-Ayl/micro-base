@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class LambdaCriteria {
      */
     public static <T1, R1> LambdaCriteria where(LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1) {
         //生成对应路径
-        String path = LambdaParseFieldNameExtraUtils.getMongoColumn(key1);
+        String path = path(key1, new int[]{});
         //实现
         return new LambdaCriteria(path);
     }
@@ -58,9 +59,11 @@ public class LambdaCriteria {
      * @param key2 第二级key
      * @return
      */
-    public static <T1, R1, T2, R2> LambdaCriteria where(LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1, LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2) {
+    public static <T1, R1, T2, R2> LambdaCriteria where(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2) {
         //生成对应路径
-        String path = String.format("%s.%s", LambdaParseFieldNameExtraUtils.getMongoColumn(key1), LambdaParseFieldNameExtraUtils.getMongoColumn(key2));
+        String path = path(key1, key2, new int[]{});
         //实现
         return new LambdaCriteria(path);
     }
@@ -70,11 +73,69 @@ public class LambdaCriteria {
      *
      * @param key1 第一级key
      * @param key2 第二级key
+     * @param key3 第三级key
      * @return
      */
-    public static <T1, R1, T2, R2, T3, R3> LambdaCriteria where(LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1, LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2, LambdaParseFieldNameExtraUtils.MFunction<T3, R3> key3) {
+    public static <T1, R1, T2, R2, T3, R3> LambdaCriteria where(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            LambdaParseFieldNameExtraUtils.MFunction<T3, R3> key3) {
         //生成对应路径
-        String path = String.format("%s.%s.%s", LambdaParseFieldNameExtraUtils.getMongoColumn(key1), LambdaParseFieldNameExtraUtils.getMongoColumn(key2), LambdaParseFieldNameExtraUtils.getMongoColumn(key3));
+        String path = path(key1, key2, key3, new int[]{});
+        //实现
+        return new LambdaCriteria(path);
+    }
+
+    /**
+     * 实现 where 一级的情况 eg: sku
+     *
+     * @param key1              第一级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    public static <T1, R1> LambdaCriteria where(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            int[] firstUpperCaseArr) {
+        //生成对应路径
+        String path = path(key1, firstUpperCaseArr);
+        //实现
+        return new LambdaCriteria(path);
+    }
+
+    /**
+     * 实现 where 两级的情况 eg: productList.sku
+     *
+     * @param key1              第一级key
+     * @param key2              第二级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    public static <T1, R1, T2, R2> LambdaCriteria where(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            int[] firstUpperCaseArr) {
+        //生成对应路径
+        String path = path(key1, key2, firstUpperCaseArr);
+        //实现
+        return new LambdaCriteria(path);
+    }
+
+    /**
+     * 实现 where 三级的情况 eg: productList.cat.sku
+     *
+     * @param key1              第一级key
+     * @param key2              第二级key
+     * @param key3              第三级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    public static <T1, R1, T2, R2, T3, R3> LambdaCriteria where(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            LambdaParseFieldNameExtraUtils.MFunction<T3, R3> key3,
+            int[] firstUpperCaseArr) {
+        //生成对应路径
+        String path = path(key1, key2, key3, firstUpperCaseArr);
         //实现
         return new LambdaCriteria(path);
     }
@@ -87,7 +148,7 @@ public class LambdaCriteria {
      */
     public <T1, R1> LambdaCriteria and(LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1) {
         //生成对应路径
-        String path = LambdaParseFieldNameExtraUtils.getMongoColumn(key1);
+        String path = path(key1, new int[]{});
         //实现
         this.criteria = this.criteria.and(path);
         //返回
@@ -101,9 +162,11 @@ public class LambdaCriteria {
      * @param key2 第二级key
      * @return
      */
-    public <T1, R1, T2, R2> LambdaCriteria and(LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1, LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2) {
+    public <T1, R1, T2, R2> LambdaCriteria and(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2) {
         //生成对应路径
-        String path = String.format("%s.%s", LambdaParseFieldNameExtraUtils.getMongoColumn(key1), LambdaParseFieldNameExtraUtils.getMongoColumn(key2));
+        String path = path(key1, key2, new int[]{});
         //实现
         this.criteria = this.criteria.and(path);
         //返回
@@ -118,9 +181,72 @@ public class LambdaCriteria {
      * @param key3 第三级key
      * @return
      */
-    public <T1, R1, T2, R2, T3, R3> LambdaCriteria and(LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1, LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2, LambdaParseFieldNameExtraUtils.MFunction<T3, R3> key3) {
+    public <T1, R1, T2, R2, T3, R3> LambdaCriteria and(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            LambdaParseFieldNameExtraUtils.MFunction<T3, R3> key3) {
         //生成对应路径
-        String path = String.format("%s.%s.%s", LambdaParseFieldNameExtraUtils.getMongoColumn(key1), LambdaParseFieldNameExtraUtils.getMongoColumn(key2), LambdaParseFieldNameExtraUtils.getMongoColumn(key3));
+        String path = path(key1, key2, key3, new int[]{});
+        //实现
+        this.criteria = this.criteria.and(path);
+        //返回
+        return this;
+    }
+
+    /**
+     * 实现 and 一级的情况 eg: sku
+     *
+     * @param key1              第一级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    public <T1, R1> LambdaCriteria and(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            int[] firstUpperCaseArr) {
+        //生成对应路径
+        String path = path(key1, firstUpperCaseArr);
+        //实现
+        this.criteria = this.criteria.and(path);
+        //返回
+        return this;
+    }
+
+    /**
+     * 实现 and 两级的情况 eg: productList.sku
+     *
+     * @param key1              第一级key
+     * @param key2              第二级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    public <T1, R1, T2, R2> LambdaCriteria and(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            int[] firstUpperCaseArr) {
+        //生成对应路径
+        String path = path(key1, key2, firstUpperCaseArr);
+        //实现
+        this.criteria = this.criteria.and(path);
+        //返回
+        return this;
+    }
+
+    /**
+     * 实现 and 三级的情况 eg: productList.cat.sku
+     *
+     * @param key1              第一级key
+     * @param key2              第二级key
+     * @param key3              第三级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    public <T1, R1, T2, R2, T3, R3> LambdaCriteria and(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            LambdaParseFieldNameExtraUtils.MFunction<T3, R3> key3,
+            int[] firstUpperCaseArr) {
+        //生成对应路径
+        String path = path(key1, key2, key3, firstUpperCaseArr);
         //实现
         this.criteria = this.criteria.and(path);
         //返回
@@ -421,6 +547,120 @@ public class LambdaCriteria {
     public Query getQuery() {
         //返回
         return new Query(this.criteria);
+    }
+
+    /**
+     * 实现 path 一级的情况 eg: sku
+     *
+     * @param key1              第一级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    private static <T1, R1> String path(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            int[] firstUpperCaseArr) {
+
+        //转为索引Set
+        Set<Integer> firstUpperCaseIndexSet = Arrays.stream(firstUpperCaseArr).boxed().collect(Collectors.toSet());
+
+        /**
+         * 解析名称
+         */
+
+        //解析key对应名称
+        String key1Name = firstUpperCaseIndexSet.contains(0) == true ?
+                LambdaParseFieldNameExtraUtils.getMongoColumnBigHump(key1) :
+                LambdaParseFieldNameExtraUtils.getMongoColumn(key1);
+
+        /**
+         * 组装路径
+         */
+
+        //生成对应路径
+        String path = key1Name;
+        //实现
+        return path;
+    }
+
+    /**
+     * 实现 path 两级的情况 eg: productList.sku
+     *
+     * @param key1              第一级key
+     * @param key2              第二级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    private static <T1, R1, T2, R2> String path(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            int[] firstUpperCaseArr) {
+
+        //转为索引Set
+        Set<Integer> firstUpperCaseIndexSet = Arrays.stream(firstUpperCaseArr).boxed().collect(Collectors.toSet());
+
+        /**
+         * 解析名称
+         */
+
+        //解析key对应名称
+        String key1Name = firstUpperCaseIndexSet.contains(0) == true ?
+                LambdaParseFieldNameExtraUtils.getMongoColumnBigHump(key1) :
+                LambdaParseFieldNameExtraUtils.getMongoColumn(key1);
+        String key2Name = firstUpperCaseIndexSet.contains(1) == true ?
+                LambdaParseFieldNameExtraUtils.getMongoColumnBigHump(key2) :
+                LambdaParseFieldNameExtraUtils.getMongoColumn(key2);
+
+        /**
+         * 组装路径
+         */
+
+        //生成对应路径
+        String path = String.format("%s.%s", key1Name, key2Name);
+        //返回
+        return path;
+    }
+
+    /**
+     * 实现 path 三级的情况 eg: productList.cat.sku
+     *
+     * @param key1              第一级key
+     * @param key2              第二级key
+     * @param key3              第三级key
+     * @param firstUpperCaseArr 强制指定索引的key第一个字母大写(大驼峰)(解决特殊情况)
+     * @return
+     */
+    private static <T1, R1, T2, R2, T3, R3> String path(
+            LambdaParseFieldNameExtraUtils.MFunction<T1, R1> key1,
+            LambdaParseFieldNameExtraUtils.MFunction<T2, R2> key2,
+            LambdaParseFieldNameExtraUtils.MFunction<T3, R3> key3,
+            int[] firstUpperCaseArr) {
+
+        //转为索引Set
+        Set<Integer> firstUpperCaseIndexSet = Arrays.stream(firstUpperCaseArr).boxed().collect(Collectors.toSet());
+
+        /**
+         * 解析名称
+         */
+
+        //解析key对应名称
+        String key1Name = firstUpperCaseIndexSet.contains(0) == true ?
+                LambdaParseFieldNameExtraUtils.getMongoColumnBigHump(key1) :
+                LambdaParseFieldNameExtraUtils.getMongoColumn(key1);
+        String key2Name = firstUpperCaseIndexSet.contains(1) == true ?
+                LambdaParseFieldNameExtraUtils.getMongoColumnBigHump(key2) :
+                LambdaParseFieldNameExtraUtils.getMongoColumn(key2);
+        String key3Name = firstUpperCaseIndexSet.contains(2) == true ?
+                LambdaParseFieldNameExtraUtils.getMongoColumnBigHump(key3) :
+                LambdaParseFieldNameExtraUtils.getMongoColumn(key3);
+
+        /**
+         * 组装路径
+         */
+
+        //生成对应路径
+        String path = String.format("%s.%s.%s", key1Name, key2Name, key3Name);
+        //返回
+        return path;
     }
 
     @Override
