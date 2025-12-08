@@ -2,6 +2,7 @@ package com.rock.micro.base.db.mongo;
 
 import com.rock.micro.base.data.BaseDocument;
 import com.rock.micro.base.util.ArrayExtraUtils;
+import com.rock.micro.base.util.LambdaParseFieldNameExtraUtils;
 import com.rock.micro.base.util.ListExtraUtils;
 import com.rock.micro.base.util.MongoExtraUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -121,7 +122,7 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
     @Override
     public T getById(String id) {
         //实现
-        return getById(id, null);
+        return getById(id, "");
     }
 
     @Override
@@ -140,9 +141,36 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
     }
 
     @Override
+    public T getById(String id, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields) {
+        //实现
+        return getById(id, String.join(",", LambdaParseFieldNameExtraUtils.getMongoColumnList(fields)));
+    }
+
+    @Override
+    public T getByIdExclude(String id, String fields) {
+        //判空
+        if (StringUtils.isBlank(id)) {
+            //过
+            return null;
+        }
+        //初始化查询
+        Query query = MongoExtraUtils.initQueryAndBase(id);
+        //限制返回参数
+        MongoExtraUtils.setExcludeFields(query, fields);
+        //实现
+        return this.mongoTemplate.findOne(query, getEntityClass());
+    }
+
+    @Override
+    public T getByIdExclude(String id, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields) {
+        //实现
+        return getByIdExclude(id, String.join(",", LambdaParseFieldNameExtraUtils.getMongoColumnList(fields)));
+    }
+
+    @Override
     public List<T> listByIdList(Collection<String> idList) {
         //实现
-        return listByIdList(idList, null);
+        return listByIdList(idList, "");
     }
 
     @Override
@@ -161,9 +189,36 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
     }
 
     @Override
+    public List<T> listByIdList(Collection<String> idList, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields) {
+        //实现
+        return listByIdList(idList, String.join(",", LambdaParseFieldNameExtraUtils.getMongoColumnList(fields)));
+    }
+
+    @Override
+    public List<T> listByIdListExclude(Collection<String> idList, String fields) {
+        //判空
+        if (CollectionUtils.isEmpty(idList)) {
+            //过
+            return new ArrayList<>();
+        }
+        //限制条件
+        Query query = MongoExtraUtils.initQueryAndBase(idList);
+        //限制返回参数
+        MongoExtraUtils.setExcludeFields(query, fields);
+        //根据id列表查询
+        return this.mongoTemplate.find(query, getEntityClass());
+    }
+
+    @Override
+    public List<T> listByIdListExclude(Collection<String> idList, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields) {
+        //实现
+        return listByIdListExclude(idList, String.join(",", LambdaParseFieldNameExtraUtils.getMongoColumnList(fields)));
+    }
+
+    @Override
     public List<T> listAll() {
         //实现
-        return listAll(null);
+        return listAll("");
     }
 
     @Override
@@ -174,6 +229,12 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
         MongoExtraUtils.setFields(query, fields);
         //实现
         return mongoTemplate.find(query, getEntityClass());
+    }
+
+    @Override
+    public List<T> listAll(List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields) {
+        //实现
+        return listAll(String.join(",", LambdaParseFieldNameExtraUtils.getMongoColumnList(fields)));
     }
 
     @Override
@@ -381,6 +442,16 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
             //限制时间范围
             criteriaList.add(Criteria.where(param.getTimeType()).gte(new Date(param.getStartTime())).lte(new Date(param.getEndTime())));
         }
+        //如果只有开始时间
+        else if (StringUtils.isNotBlank(param.getTimeType()) && param.getStartTime() != null) {
+            //限制时间
+            criteriaList.add(Criteria.where(param.getTimeType()).gte(new Date(param.getStartTime())));
+        }
+        //如果只有结束时间
+        else if (StringUtils.isNotBlank(param.getTimeType()) && param.getEndTime() != null) {
+            //限制时间
+            criteriaList.add(Criteria.where(param.getTimeType()).lte(new Date(param.getEndTime())));
+        }
 
         /**
          * 处理一般关键词
@@ -423,11 +494,17 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
     @Override
     public RollPageResult<T> rollPage(MongoRollPageParam param) {
         //实现
-        return rollPage(param, null);
+        return rollPage(param, null, null);
     }
 
     @Override
     public RollPageResult<T> rollPage(MongoRollPageParam param, List<Criteria> criteriaList) {
+        //实现
+        return rollPage(param, criteriaList, null);
+    }
+
+    @Override
+    public RollPageResult<T> rollPage(MongoRollPageParam param, List<Criteria> criteriaList, Sort sort) {
 
         /**
          * 初始化
@@ -447,14 +524,19 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
          * 排序
          */
 
-        //排序key,默认更新时间
-        String sortKey = Optional.ofNullable(param)
-                .map(MongoRollPageParam::getSortKey)
-                .orElse("updateDate");
-        //排序方式,默认倒序
-        String sortOrder = Optional.ofNullable(param)
-                .map(MongoRollPageParam::getSortOrder)
-                .orElse("desc");
+        //如果没有指定
+        if (sort == null) {
+            //排序key,默认更新时间
+            String sortKey = Optional.ofNullable(param)
+                    .map(MongoRollPageParam::getSortKey)
+                    .orElse("updateDate");
+            //排序方式,默认倒序
+            String sortOrder = Optional.ofNullable(param)
+                    .map(MongoRollPageParam::getSortOrder)
+                    .orElse("desc");
+            //默认使用参数排序
+            sort = Sort.by(Sort.Direction.fromString(sortOrder), sortKey);
+        }
 
         /**
          * 是否需要分页
@@ -478,8 +560,8 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
                 //分页,默认20
                 param.getPageNum() == null ? 1 : param.getPageNum(),
                 param.getPageSize() == null ? 20 : param.getPageSize(),
-                //指定排序
-                Sort.by(Sort.Direction.fromString(sortOrder), sortKey),
+                //排序
+                sort,
                 //是否返回count
                 needCount
         );
@@ -549,4 +631,3 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
     }
 
 }
-

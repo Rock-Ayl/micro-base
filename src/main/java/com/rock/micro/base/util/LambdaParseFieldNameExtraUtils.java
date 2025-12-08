@@ -1,5 +1,6 @@
 package com.rock.micro.base.util;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +9,10 @@ import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 根据 Lambda表达式 获取名称 扩展工具包
@@ -72,6 +76,27 @@ public class LambdaParseFieldNameExtraUtils {
     }
 
     /**
+     * 批量根据Lambda表达式,获取 字段 名称
+     *
+     * @param funcList 函数式接口，例：User::getId()
+     * @param <T>      泛型T
+     * @param <?>      泛型?
+     * @return 字段名列表
+     */
+    public static <T> List<String> getColumnList(List<MFunction<T, ?>> funcList) {
+        //判空
+        if (CollectionUtils.isEmpty(funcList)) {
+            //过
+            return new ArrayList<>();
+        }
+        //实现
+        return funcList
+                .stream()
+                .map(LambdaParseFieldNameExtraUtils::getColumn)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 根据Lambda表达式,获取 字段 名称,为 Mongo 特化处理
      * -
      * 小驼峰
@@ -95,6 +120,27 @@ public class LambdaParseFieldNameExtraUtils {
                 //直接返回
                 return column;
         }
+    }
+
+    /**
+     * 批量根据Lambda表达式,获取 字段 名称,为 Mongo 特化处理
+     *
+     * @param funcList 函数式接口，例：User::getId()
+     * @param <T>      泛型T
+     * @param <?>      泛型?
+     * @return 字段名列表
+     */
+    public static <T> List<String> getMongoColumnList(List<MFunction<T, ?>> funcList) {
+        //判空
+        if (CollectionUtils.isEmpty(funcList)) {
+            //过
+            return new ArrayList<>();
+        }
+        //实现
+        return funcList
+                .stream()
+                .map(LambdaParseFieldNameExtraUtils::getMongoColumn)
+                .collect(Collectors.toList());
     }
 
     /**

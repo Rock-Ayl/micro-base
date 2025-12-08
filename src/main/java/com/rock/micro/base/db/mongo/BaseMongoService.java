@@ -1,10 +1,12 @@
 package com.rock.micro.base.db.mongo;
 
 import com.rock.micro.base.data.BaseDocument;
+import com.rock.micro.base.util.LambdaParseFieldNameExtraUtils;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.Collection;
@@ -70,6 +72,33 @@ public interface BaseMongoService<T extends BaseDocument> {
     T getById(String id, String fields);
 
     /**
+     * 根据id,查询单个,限制返回参数
+     *
+     * @param id     id
+     * @param fields 限制返回参数
+     * @return
+     */
+    T getById(String id, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields);
+
+    /**
+     * 根据id,查询单个,限制返回参数
+     *
+     * @param id     id
+     * @param fields 限制返回参数
+     * @return
+     */
+    T getByIdExclude(String id, String fields);
+
+    /**
+     * 根据id,查询单个,限制返回参数
+     *
+     * @param id     id
+     * @param fields 限制返回参数
+     * @return
+     */
+    T getByIdExclude(String id, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields);
+
+    /**
      * 根据id列表,查询多个
      *
      * @param idList id列表
@@ -87,6 +116,33 @@ public interface BaseMongoService<T extends BaseDocument> {
     List<T> listByIdList(Collection<String> idList, String fields);
 
     /**
+     * 根据id列表,查询多个,限制返回参数
+     *
+     * @param idList id列表
+     * @param fields 限制返回参数
+     * @return
+     */
+    List<T> listByIdList(Collection<String> idList, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields);
+
+    /**
+     * 根据id列表,查询多个,限制返回参数
+     *
+     * @param idList id列表
+     * @param fields 限制返回参数
+     * @return
+     */
+    List<T> listByIdListExclude(Collection<String> idList, String fields);
+
+    /**
+     * 根据id列表,查询多个,限制返回参数
+     *
+     * @param idList id列表
+     * @param fields 限制返回参数
+     * @return
+     */
+    List<T> listByIdListExclude(Collection<String> idList, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields);
+
+    /**
      * 获取所有
      *
      * @return
@@ -100,6 +156,14 @@ public interface BaseMongoService<T extends BaseDocument> {
      * @return
      */
     List<T> listAll(String fields);
+
+    /**
+     * 获取所有,限制返回参数
+     *
+     * @param fields 限制返回参数
+     * @return
+     */
+    List<T> listAll(List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields);
 
     /**
      * 获取所有id
@@ -264,5 +328,15 @@ public interface BaseMongoService<T extends BaseDocument> {
      * @return
      */
     RollPageResult<T> rollPage(MongoRollPageParam param, List<Criteria> criteriaList);
+
+    /**
+     * 翻页查询
+     *
+     * @param param        模板参数(虽然有排序,不是不被使用)
+     * @param criteriaList 除了模板参数,其他的限制条件
+     * @param sort         强行指定排序
+     * @return
+     */
+    RollPageResult<T> rollPage(MongoRollPageParam param, List<Criteria> criteriaList, Sort sort);
 
 }

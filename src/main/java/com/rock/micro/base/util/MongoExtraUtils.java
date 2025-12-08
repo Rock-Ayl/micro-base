@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * mongo 扩展工具包
@@ -70,16 +69,66 @@ public class MongoExtraUtils {
     /**
      * 为 mongo {@link Query} 对象组装限制返回参数
      *
-     * @param query     mongo query 对象
-     * @param functions 限制返回参数 Lambda表达式格式
+     * @param query  mongo query 对象
+     * @param fields 限制返回参数 Lambda表达式格式
      */
-    public static <T, R> void setFieldsLambda(Query query, LambdaParseFieldNameExtraUtils.MFunction<T, R>... functions) {
-        //转化为对应字段列表
-        List<String> fields = Arrays.stream(functions)
-                .map(LambdaParseFieldNameExtraUtils::getMongoColumn)
-                .collect(Collectors.toList());
+    public static <T> void setFieldsLambda(Query query, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields) {
         //实现
-        setFields(query, fields);
+        setFields(query, String.join(",", LambdaParseFieldNameExtraUtils.getMongoColumnList(fields)));
+    }
+
+    /**
+     * 为 mongo {@link Query} 对象组装限制返回参数
+     *
+     * @param query  mongo query 对象
+     * @param fields 限制参数 eg:   "id,state,sellerSku"
+     */
+    public static void setExcludeFields(Query query, String fields) {
+        //实现
+        setExcludeFields(query, ArrayExtraUtils.toArray(fields));
+    }
+
+    /**
+     * 为 mongo {@link Query} 对象组装限制返回参数
+     *
+     * @param query     mongo query 对象
+     * @param fieldList 限制参数 eg:   ["id,state,sellerSku"]
+     */
+    public static void setExcludeFields(Query query, List<String> fieldList) {
+        //判空
+        if (CollectionUtils.isEmpty(fieldList)) {
+            //过
+            return;
+        }
+        //实现
+        setExcludeFields(query, fieldList.toArray(new String[]{}));
+    }
+
+    /**
+     * 为 mongo {@link Query} 对象组装限制返回参数
+     *
+     * @param query    mongo query 对象
+     * @param fieldArr 限制参数 eg:   "id,state,sellerSku"
+     */
+    public static void setExcludeFields(Query query, String[] fieldArr) {
+        //判空
+        if (query == null || fieldArr == null || fieldArr.length < 1) {
+            //过
+            return;
+        }
+        //组装
+        query.fields().exclude(fieldArr);
+    }
+
+    /**
+     * 为 mongo {@link Query} 对象组装限制返回参数
+     *
+     * @param query  mongo query 对象
+     * @param fields 限制返回参数 Lambda表达式格式
+     */
+    public static <T> void setExcludeFieldsLambda(Query query, List<LambdaParseFieldNameExtraUtils.MFunction<T, ?>> fields) {
+        //实现
+        setExcludeFields(query, String.join(",", LambdaParseFieldNameExtraUtils.getMongoColumnList(fields)));
     }
 
     /**
