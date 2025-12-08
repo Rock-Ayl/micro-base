@@ -1,5 +1,7 @@
 package com.rock.micro.base.common.auth;
 
+import cn.hutool.http.useragent.UserAgent;
+import cn.hutool.http.useragent.UserAgentUtil;
 import com.rock.micro.base.common.constant.HttpConst;
 import com.rock.micro.base.common.constant.RedisKey;
 import com.rock.micro.base.data.User;
@@ -87,6 +89,15 @@ public class ControllerInterceptor implements HandlerInterceptor {
 
         //解析请求ip,并记录
         LoginAuth.IP.set(DualIpExtraUtils.getDualIp(request));
+
+        /**
+         * 浏览器、平台、设备、操作系统 等信息
+         */
+
+        //解析各种信息
+        UserAgent userAgent = UserAgentUtil.parse(request.getHeader("User-Agent"));
+        //记录
+        LoginAuth.USER_AGENT.set(userAgent);
 
         /**
          * 登录 信息

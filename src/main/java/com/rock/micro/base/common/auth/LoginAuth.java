@@ -1,5 +1,6 @@
 package com.rock.micro.base.common.auth;
 
+import cn.hutool.http.useragent.UserAgent;
 import com.rock.micro.base.data.User;
 import com.rock.micro.base.util.DualIpExtraUtils;
 
@@ -19,6 +20,10 @@ public @interface LoginAuth {
 
     //登录成功时,这里承载着该线程的用户信息
     ThreadLocal<User> USER = new ThreadLocal<>();
+
+    //平台、浏览器、设备、系统 等信息
+    ThreadLocal<UserAgent> USER_AGENT = new ThreadLocal<>();
+
     //这里承载着该线程的IP信息
     ThreadLocal<DualIpExtraUtils.DualIP> IP = new ThreadLocal<>();
 

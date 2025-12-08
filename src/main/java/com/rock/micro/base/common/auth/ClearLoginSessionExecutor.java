@@ -10,6 +10,7 @@ public class ClearLoginSessionExecutor {
      */
     public static void clear() {
         LoginAuth.USER.remove();
+        LoginAuth.USER_AGENT.remove();
         LoginAuth.IP.remove();
     }
 
