@@ -2,6 +2,7 @@ package com.rock.micro.base.data.doc;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rock.micro.base.data.BaseDocument;
+import com.rock.micro.base.data.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -52,13 +53,7 @@ public class NormalLogDoc extends BaseDocument {
      * 用户信息
      */
 
-    @ApiModelProperty("创建用户id")
-    private String createUserId;
-
-    @ApiModelProperty("创建用户名称")
-    private String createUserName;
-
-    @ApiModelProperty("创建用户邮箱")
-    private String createUserEmail;
+    @ApiModelProperty("创建用户")
+    private User createUser;
 
 }

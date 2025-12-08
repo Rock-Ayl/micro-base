@@ -106,13 +106,9 @@ public class NormalLogDocServiceImpl extends BaseMongoServiceImpl<NormalLogDoc> 
          * 用户
          */
 
-        //如果线程里有用户信息
-        if (LoginAuth.USER.get() != null) {
-            //记录
-            normalLogDoc.setCreateUserId(LoginAuth.USER.get().getId());
-            normalLogDoc.setCreateUserName(LoginAuth.USER.get().getName());
-            normalLogDoc.setCreateUserEmail(LoginAuth.USER.get().getEmail());
-        }
+        //线程用户信息(不一定有)
+        normalLogDoc.setCreateUser(LoginAuth.USER.get());
+
         //返回
         return normalLogDoc;
     }

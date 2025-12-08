@@ -1,10 +1,18 @@
 package com.rock.micro.base.common.aop;
 
+import com.rock.micro.base.data.doc.ApiLogDoc;
+import com.rock.micro.base.serivce.ApiLogDocService;
+import com.rock.micro.base.serivce.BatchLogService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 控制层 aop
@@ -24,6 +32,12 @@ import org.springframework.stereotype.Component;
 public class ControllerAOPAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(ControllerAOPAspect.class);
+
+    @Autowired
+    private BatchLogService batchLogService;
+
+    @Autowired
+    private ApiLogDocService apiLogDocService;
 
     /**
      * 控制层指针
@@ -50,9 +64,27 @@ public class ControllerAOPAspect {
     //环绕通知
     @Around("controllerPointcut()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
-        LOG.info("ControllerAspect do around before...");
-        Object result = joinPoint.proceed();
-        LOG.info("ControllerAspect do around after...");
+        //开始时间
+        long start = System.currentTimeMillis();
+        //获取请求
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        //接口返回结果
+        Object result;
+        try {
+            //执行接口本身
+            result = joinPoint.proceed();
+        } finally {
+            //结束时间
+            long end = System.currentTimeMillis();
+            //构建日志实体
+            ApiLogDoc logEntity = apiLogDocService.parse(
+                    request, joinPoint,
+                    joinPoint.getSignature().toShortString(),
+                    start, end);
+            //加入队列
+            batchLogService.addLog(logEntity);
+        }
+        //返回结果
         return result;
     }
 
