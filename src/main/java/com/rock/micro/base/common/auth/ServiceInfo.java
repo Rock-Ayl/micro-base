@@ -24,6 +24,9 @@ public class ServiceInfo {
     @ApiModelProperty("静态-服务名")
     public static String STATIC_SERVICE_NAME;
 
+    @ApiModelProperty("静态-服务环境枚举")
+    public static ServiceEnvironmentEnum STATIC_SERVICE_ENVIRONMENT;
+
     @ApiModelProperty("静态-端口")
     public static Integer STATIC_PORT;
 
@@ -34,33 +37,51 @@ public class ServiceInfo {
      * 配置文件
      */
 
-    @ApiModelProperty("服务名")
+    @ApiModelProperty("服务-名称")
     @Value("${spring.application.name}")
     private String serviceName;
 
-    @ApiModelProperty("端口")
+    @ApiModelProperty("服务-端口")
     @Value("${server.port}")
     private Integer port;
 
+    @ApiModelProperty("服务-环境编码")
+    @Value("${micro.rock.mine.service.environment}")
+    private String serviceEnvironment;
+
     @PostConstruct
     private void init() {
+
+        /**
+         * 载入配置参数
+         */
+
         STATIC_SERVICE_NAME = this.serviceName;
         STATIC_PORT = this.port;
+        STATIC_SERVICE_ENVIRONMENT = ServiceEnvironmentEnum.parseByCode(this.serviceEnvironment);
         try {
             STATIC_IP = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
 
         }
-    }
 
-    /**
-     * 获取是否为 内网-测试环境
-     *
-     * @return
-     */
-    public static boolean internalTestingEnvironment() {
-        //实现
-        return ServiceInfo.STATIC_IP.startsWith("192.168") == true;
+        /**
+         * 通过生产、测试处理参数
+         */
+
+        //根据环境配置
+        switch (STATIC_SERVICE_ENVIRONMENT) {
+            //测试
+            case TEST:
+                break;
+            //预发
+            case PRE_VIEW:
+                break;
+            //生产
+            case ONLINE:
+                break;
+        }
+
     }
 
 }
