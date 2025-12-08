@@ -1,5 +1,6 @@
 package com.rock.micro.base.data;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,5 +17,8 @@ import java.io.Serializable;
 public class BaseIndex extends BaseDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    @ApiModelProperty("ES搜索分数")
+    private Float esSearchScore;
 
 }

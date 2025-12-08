@@ -22,6 +22,11 @@ import java.util.List;
 public interface BaseElasticSearchService<T extends BaseIndex> {
 
     /**
+     * 如果不存在索引,尝试创建
+     */
+    void createIndex(Class<?> clazz);
+
+    /**
      * 单个创建
      *
      * @param index
@@ -86,6 +91,20 @@ public interface BaseElasticSearchService<T extends BaseIndex> {
      * @param indexList
      */
     void batchUpdateSkipNull(List<T> indexList);
+
+    /**
+     * 批量创建或更新的方法,更新是完全覆盖
+     *
+     * @param indexList
+     */
+    void batchCreateOrUpdate(List<T> indexList);
+
+    /**
+     * 批量创建或更新的方法,跳过NULL的字段
+     *
+     * @param indexList
+     */
+    void batchCreateOrUpdateSkipNullById(List<T> indexList);
 
     @Getter
     @Setter

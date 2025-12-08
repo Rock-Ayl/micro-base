@@ -13,19 +13,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.IndexOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.UpdateQuery;
+import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * mongo 服务基底实现
@@ -40,6 +39,19 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+
+    @Override
+    public void createIndex(Class<?> clazz) {
+        //获取索引操作对象
+        IndexOperations indexOperations = elasticsearchRestTemplate.indexOps(clazz);
+        //如果不存在索引
+        if (indexOperations.exists() == false) {
+            //创建索引
+            indexOperations.create();
+            //写入映射
+            indexOperations.putMapping();
+        }
+    }
 
     @Override
     public T create(T index) {
@@ -106,11 +118,22 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
         //初始化updateQuery
         UpdateQuery updateQuery = UpdateQuery.builder(id).withDocument(document).build();
         //更新
-        elasticsearchRestTemplate.update(updateQuery, getIndex(index));
+        elasticsearchRestTemplate.update(updateQuery, getIndex(index.getClass()));
     }
 
     @Override
     public void batchUpdateSkipNull(List<T> indexList) {
+        //实现,不执行 upsert
+        batchUpdateSkipNullById(indexList, false);
+    }
+
+    /**
+     * 批量根据id,更新es实体
+     *
+     * @param indexList   索引列表
+     * @param docAsUpsert 是否执行 upsert 操作
+     */
+    private void batchUpdateSkipNullById(List<T> indexList, boolean docAsUpsert) {
         //判空
         if (CollectionUtils.isEmpty(indexList)) {
             //过
@@ -130,15 +153,49 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
             //将实体解析为document
             Document document = Document.parse(FastJsonExtraUtils.toJSONString(index));
             //初始化updateQuery
-            UpdateQuery updateQuery = UpdateQuery.builder(id).withDocument(document).build();
+            UpdateQuery updateQuery = UpdateQuery
+                    //根据id
+                    .builder(id)
+                    //对应文档
+                    .withDocument(document)
+                    //是否执行 upsert 操作
+                    .withDocAsUpsert(docAsUpsert).build();
             //组装
             updateQueryList.add(updateQuery);
         }
         //如果存在需要更新的内容
         if (CollectionUtils.isNotEmpty(updateQueryList)) {
             //批量更新
-            elasticsearchRestTemplate.bulkUpdate(updateQueryList, getIndex(indexList.get(0)));
+            elasticsearchRestTemplate.bulkUpdate(updateQueryList, getIndex(indexList.get(0).getClass()));
         }
+    }
+
+    @Override
+    public void batchCreateOrUpdate(List<T> indexList) {
+        //判空
+        if (CollectionUtils.isEmpty(indexList)) {
+            //过
+            return;
+        }
+        //批量索引的列表
+        List<IndexQuery> indexQueryList = new ArrayList<>();
+        //循环
+        for (T index : indexList) {
+            //初始化
+            IndexQuery indexQuery = new IndexQuery();
+            //参数
+            indexQuery.setObject(index);
+            //组装到列表
+            indexQueryList.add(indexQuery);
+        }
+        //使用 bulkIndex 批量操作
+        elasticsearchRestTemplate.bulkIndex(indexQueryList, getIndex(indexList.get(0).getClass()));
+    }
+
+    @Override
+    public void batchCreateOrUpdateSkipNullById(List<T> indexList) {
+        //实现,执行 upsert
+        batchUpdateSkipNullById(indexList, true);
     }
 
     @Override
@@ -167,6 +224,11 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
 
     @Override
     public RollPageResult<T> rollPage(Class<T> clazz, QueryBuilder query, AbstractAggregationBuilder abstractAggregationBuilder, String[] fields, Integer pageNum, Integer pageSize, SortBuilder sort) {
+
+        /**
+         * 组装查询条件
+         */
+
         //初始化searchBuilder
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         //组装查询条件
@@ -174,7 +236,7 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
         //如果要限制返回字段
         if (fields != null && fields.length > 0) {
             //限制返回字段
-            nativeSearchQueryBuilder.withFields(fields);
+            nativeSearchQueryBuilder.withSourceFilter(new FetchSourceFilter(fields, null));
         }
         //如果要限制排序
         if (sort != null) {
@@ -197,31 +259,42 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
             //设置分页
             nativeSearchQuery.setPageable(pageRequest);
         }
+
+        /**
+         * 查询、并组装结果
+         */
+
         //查询
         SearchHits<T> searchHits = elasticsearchRestTemplate.search(nativeSearchQuery, clazz, getIndex(clazz));
         //记录总数
         result.setTotal(searchHits.getTotalHits());
-        //将返回实体拆包
-        result.setList(searchHits.getSearchHits().stream().map(p -> p.getContent()).collect(Collectors.toList()));
         //获取聚合内容并组装
         result.setAggregations(searchHits.getAggregations());
+
+        /**
+         * 实体拆包
+         */
+
+        //结果列表
+        List<T> indexList = new ArrayList<>();
+        //循环
+        for (SearchHit<T> searchHit : searchHits.getSearchHits()) {
+            //转为对应实体
+            T index = searchHit.getContent();
+            //获取分数并组装
+            index.setEsSearchScore(searchHit.getScore());
+            //加入列表
+            indexList.add(index);
+        }
+        //组装
+        result.setList(indexList);
+
+        /**
+         * 返回
+         */
+
         //返回
         return result;
-    }
-
-    /**
-     * 根据实体,获取索引对象
-     *
-     * @param index
-     * @return
-     */
-    private IndexCoordinates getIndex(T index) {
-        //获取索引settings
-        Map<String, Object> settings = elasticsearchRestTemplate.indexOps(index.getClass()).getSettings();
-        //获取索引名
-        String indexName = settings.getOrDefault("index.provided_name", "none").toString();
-        //返回
-        return IndexCoordinates.of(indexName);
     }
 
     /**
@@ -230,7 +303,7 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
      * @param clazz
      * @return
      */
-    private IndexCoordinates getIndex(Class<T> clazz) {
+    private IndexCoordinates getIndex(Class<?> clazz) {
         //获取索引settings
         Map<String, Object> settings = elasticsearchRestTemplate.indexOps(clazz).getSettings();
         //获取索引名
@@ -240,4 +313,3 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
     }
 
 }
-
