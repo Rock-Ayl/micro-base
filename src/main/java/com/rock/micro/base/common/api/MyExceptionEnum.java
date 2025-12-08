@@ -1,6 +1,7 @@
 package com.rock.micro.base.common.api;
 
 import com.alibaba.fastjson.JSONObject;
+import com.rock.micro.base.common.constant.JSONConst;
 import lombok.Getter;
 
 /**
@@ -131,9 +132,9 @@ public enum MyExceptionEnum {
         //转为json
         JSONObject json = new JSONObject();
         //组装
-        json.put("code", this.getCode());
-        json.put("zhDesc", this.getZhDesc());
-        json.put("enDesc", this.getEnDesc());
+        json.put(JSONConst.KEY_CODE, this.getCode());
+        json.put(JSONConst.KEY_ZH_DESC, this.getZhDesc());
+        json.put(JSONConst.KEY_EN_DESC, this.getEnDesc());
         //返回
         return json;
     }
