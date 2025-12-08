@@ -1,5 +1,6 @@
 package com.rock.micro.base.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,56 +23,83 @@ import java.util.concurrent.Callable;
  */
 public class JacksonExtraUtils {
 
-    //默认 ObjectMapper 小驼峰单例
+    /**
+     * 保留空 配置
+     */
+
+    //默认 ObjectMapper 保留空 + 小驼峰单例
     private final static ObjectMapper DEFAULT_OBJECT_MAPPER;
-    //可选 ObjectMapper 下划线单例
+    //可选 ObjectMapper 保留空 + 下划线单例
     private final static ObjectMapper SNAKE_CASE_OBJECT_MAPPER;
-    //可选 ObjectMapper 大驼峰单例
+    //可选 ObjectMapper 保留空 + 大驼峰单例
     private final static ObjectMapper UPPER_CAMEL_CASE_OBJECT_MAPPER;
+
+    /**
+     * 不保留空 配置
+     */
+
+    //可选 ObjectMapper 不保留空 + 下划线单例
+    private final static ObjectMapper NON_NULL_SNAKE_CASE_OBJECT_MAPPER;
 
     static {
 
         /**
          * 默认 {@link ObjectMapper}
          * -
+         * 保留空
          * Java风格-小驼峰
          */
 
         //初始化 默认 ObjectMapper
-        DEFAULT_OBJECT_MAPPER = initMapper();
+        DEFAULT_OBJECT_MAPPER = initMapper(false);
 
         /**
          * 可选 {@link ObjectMapper}
          * -
+         * 保留空
          * C风格-下划线
          */
 
         //初始化 默认 ObjectMapper
-        SNAKE_CASE_OBJECT_MAPPER = initMapper();
+        SNAKE_CASE_OBJECT_MAPPER = initMapper(false);
         //设置字段命名策略为下划线格式
         SNAKE_CASE_OBJECT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
         /**
          * 可选 {@link ObjectMapper}
          * -
+         * 保留空
          * 通用-大驼峰
          */
 
         //初始化 默认 ObjectMapper
-        UPPER_CAMEL_CASE_OBJECT_MAPPER = initMapper();
+        UPPER_CAMEL_CASE_OBJECT_MAPPER = initMapper(false);
         //设置字段命名策略为大驼峰
         UPPER_CAMEL_CASE_OBJECT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
+
+        /**
+         * 可选 {@link ObjectMapper}
+         * -
+         * 不保留空
+         * C风格-下划线
+         */
+
+        //初始化 默认 ObjectMapper
+        NON_NULL_SNAKE_CASE_OBJECT_MAPPER = initMapper(true);
+        //设置字段命名策略为下划线格式
+        NON_NULL_SNAKE_CASE_OBJECT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
     }
 
     /**
      * 初始化一个绝对通用的 {@link ObjectMapper}
      *
+     * @param nonNull 是否需要忽略NULL的字段,true=忽略
      * @return
      */
-    private static ObjectMapper initMapper() {
+    private static ObjectMapper initMapper(boolean nonNull) {
 
-        //初始化
+        //初始化默认配置
         ObjectMapper objectMapper = new ObjectMapper();
 
         //启用JSON缩进美化输出(可选) objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -89,8 +117,11 @@ public class JacksonExtraUtils {
          * {@link Object} -> {@link String} 配置
          */
 
-        //如果对象key的值为空,正常会输出null,但这么配置会忽略
-        //前端要求统一 objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+        //如果需要忽略NULL的字段
+        if (nonNull == true) {
+            //如果对象key的值为空,正常会输出null,但这么配置会忽略
+            objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+        }
 
         //返回
         return objectMapper;
@@ -99,6 +130,7 @@ public class JacksonExtraUtils {
     /**
      * 获取 默认 {@link ObjectMapper}
      * -
+     * 保留空
      * Java规则-小驼峰格式
      *
      * @return
@@ -111,6 +143,7 @@ public class JacksonExtraUtils {
     /**
      * 获取 下划线风格 {@link ObjectMapper}
      * -
+     * 保留空
      * Java规则-小驼峰格式
      *
      * @return
@@ -123,6 +156,7 @@ public class JacksonExtraUtils {
     /**
      * 获取 大驼峰风格 {@link ObjectMapper}
      * -
+     * 保留空
      * 通用-大驼峰格式
      *
      * @return
@@ -130,6 +164,19 @@ public class JacksonExtraUtils {
     private static ObjectMapper getUpperCamelCaseObjectMapper() {
         //返回
         return UPPER_CAMEL_CASE_OBJECT_MAPPER;
+    }
+
+    /**
+     * 获取 不保留空 + 下划线风格 {@link ObjectMapper}
+     * -
+     * 不保留空
+     * Java规则-小驼峰格式
+     *
+     * @return
+     */
+    private static ObjectMapper getNonNullSnakeCaseMapper() {
+        //返回
+        return NON_NULL_SNAKE_CASE_OBJECT_MAPPER;
     }
 
     /**
@@ -156,6 +203,7 @@ public class JacksonExtraUtils {
     /**
      * 对象转String {@link Object} -> {@link String}
      * -
+     * 保留空
      * java风格-小驼峰
      *
      * @param object 对象
@@ -169,6 +217,7 @@ public class JacksonExtraUtils {
     /**
      * 对象转String {@link Object} -> {@link String}
      * -
+     * 保留空
      * C风格-下划线格式
      *
      * @param object 对象
@@ -182,6 +231,7 @@ public class JacksonExtraUtils {
     /**
      * 对象转String {@link Object} -> {@link String}
      * -
+     * 保留空
      * 通用-大驼峰
      *
      * @param object 对象
@@ -190,6 +240,20 @@ public class JacksonExtraUtils {
     public static String toUpperCamelCaseJSONString(Object object) {
         //选定 mapper 实现
         return toJSONString(getUpperCamelCaseObjectMapper(), object);
+    }
+
+    /**
+     * 对象转String {@link Object} -> {@link String}
+     * -
+     * 不保留空
+     * C风格-下划线格式
+     *
+     * @param object 对象
+     * @return
+     */
+    public static String toNonNullSnakeCaseJSONString(Object object) {
+        //选定 mapper 实现
+        return toJSONString(getNonNullSnakeCaseMapper(), object);
     }
 
     /**
