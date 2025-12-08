@@ -3,6 +3,7 @@ package com.rock.micro.base.common.api;
 import com.alibaba.fastjson.JSONObject;
 import com.rock.micro.base.common.auth.ServiceInfo;
 import com.rock.micro.base.common.constant.JSONConst;
+import com.rock.micro.base.util.FastJsonExtraUtils;
 import com.rock.micro.base.util.JacksonExtraUtils;
 
 import java.util.HashMap;
@@ -160,6 +161,16 @@ public class JSONResponse {
     public String toString() {
         //实现
         return JacksonExtraUtils.toJSONString(this.response);
+    }
+
+    /**
+     * 可以节省不少空间
+     *
+     * @return
+     */
+    public String toFastJsonString() {
+        //实现
+        return FastJsonExtraUtils.toJSONString(this.response);
     }
 
 }
