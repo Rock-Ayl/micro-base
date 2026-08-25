@@ -3,7 +3,11 @@ package com.rock.micro.base.util;
 import cn.hutool.core.date.DateUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -25,7 +29,7 @@ public class DateExtraUtils {
     }
 
     /**
-     * 时间 转 string,只有数字
+     * 时间 转 string,只有数字,每日维度
      *
      * @param date 时间
      * @return
@@ -41,7 +45,7 @@ public class DateExtraUtils {
     }
 
     /**
-     * 时间 转 string,只有数字
+     * 时间 转 string,只有数字,每分钟维度
      *
      * @param date 时间
      * @return
@@ -57,7 +61,7 @@ public class DateExtraUtils {
     }
 
     /**
-     * 时间 转 string,只有数字
+     * 时间 转 string,只有数字,每小时维度
      *
      * @param date 时间
      * @return
@@ -73,7 +77,7 @@ public class DateExtraUtils {
     }
 
     /**
-     * 时间 转 string,只有数字
+     * 时间 转 string,只有数字,每秒维度
      *
      * @param date 时间
      * @return
@@ -89,6 +93,29 @@ public class DateExtraUtils {
     }
 
     /**
+     * 时间 转 string,只有数字,每半小时维度
+     *
+     * @param date 时间
+     * @return
+     */
+    public static String dateToYmdHmStringNumberHalfHour(Date date) {
+        //判空
+        if (date == null) {
+            //过
+            return null;
+        }
+        //取整半小时
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int minute = cal.get(Calendar.MINUTE);
+        cal.set(Calendar.MINUTE, minute < 30 ? 0 : 30);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        //返回
+        return new SimpleDateFormat("yyyyMMddHHmm").format(cal.getTime());
+    }
+
+    /**
      * 指定时间区间 随机一个日期
      *
      * @param start 开始时间
@@ -100,6 +127,42 @@ public class DateExtraUtils {
         long endMillis = end.getTime();
         long randomMillis = ThreadLocalRandom.current().nextLong(startMillis, endMillis);
         return new Date(randomMillis);
+    }
+
+    /**
+     * 中国时间 转 美国时间,并格式化
+     *
+     * @param date 时间
+     * @return
+     */
+    public static String dateToUSYmdString(Date date) {
+        //判空
+        if (date == null) {
+            //过
+            return null;
+        }
+        //太平洋标准时间(utc-8)
+        ZoneId usZone = ZoneId.of("America/Los_Angeles");
+        //转化并格式化
+        return date.toInstant().atZone(usZone).format(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US));
+    }
+
+    /**
+     * 中国时间 转 美国时间,并格式化
+     *
+     * @param date 时间
+     * @return
+     */
+    public static String dateToUSMmmDYyyyString(Date date) {
+        //判空
+        if (date == null) {
+            //过
+            return null;
+        }
+        //太平洋标准时间(utc-8)
+        ZoneId usZone = ZoneId.of("America/Los_Angeles");
+        //转化并格式化
+        return date.toInstant().atZone(usZone).format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US));
     }
 
     public static void main(String[] args) {
