@@ -34,4 +34,7 @@ public class JSONConst {
     public static final String VALUE_SUCCESS = "success";
     public static final String VALUE_ERROR = "error";
 
+    public static final int VALUE_CODE_SUCCESS = 0;
+    public static final int VALUE_CODE_ERROR = 1;
+
 }

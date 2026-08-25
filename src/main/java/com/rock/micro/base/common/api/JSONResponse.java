@@ -37,7 +37,23 @@ public class JSONResponse {
         JSONResponse response = new JSONResponse();
         //默认
         response.response.put(JSONConst.KEY_STATE, JSONConst.VALUE_SUCCESS);
-        response.response.put(JSONConst.KEY_CODE, 0);
+        response.response.put(JSONConst.KEY_CODE, JSONConst.VALUE_CODE_SUCCESS);
+        response.response.put(JSONConst.KEY_PORT, ServiceInfo.STATIC_PORT);
+        //返回
+        return response;
+    }
+
+    /**
+     * 失败
+     *
+     * @return
+     */
+    private static JSONResponse errorBuild() {
+        //初始化
+        JSONResponse response = new JSONResponse();
+        //组装error
+        response.response.put(JSONConst.KEY_STATE, JSONConst.VALUE_ERROR);
+        response.response.put(JSONConst.KEY_CODE, JSONConst.VALUE_CODE_ERROR);
         response.response.put(JSONConst.KEY_PORT, ServiceInfo.STATIC_PORT);
         //返回
         return response;
@@ -50,11 +66,8 @@ public class JSONResponse {
      */
     public static JSONResponse error() {
         //初始化
-        JSONResponse response = new JSONResponse();
-        //组装error
-        response.response.put(JSONConst.KEY_STATE, JSONConst.VALUE_ERROR);
-        response.response.put(JSONConst.KEY_CODE, 1);
-        response.response.put(JSONConst.KEY_PORT, ServiceInfo.STATIC_PORT);
+        JSONResponse response = errorBuild();
+        //其他
         response.response.put(JSONConst.KEY_ERROR_MSG, "接口请求异常");
         //返回
         return response;
@@ -67,12 +80,9 @@ public class JSONResponse {
      * @return
      */
     public static JSONResponse error(Throwable e) {
-        //初始化z
-        JSONResponse response = new JSONResponse();
-        //组装error
-        response.response.put(JSONConst.KEY_STATE, JSONConst.VALUE_ERROR);
-        response.response.put(JSONConst.KEY_CODE, 1);
-        response.response.put(JSONConst.KEY_PORT, ServiceInfo.STATIC_PORT);
+        //初始化
+        JSONResponse response = errorBuild();
+        //其他
         response.response.put(JSONConst.KEY_ERROR_MSG, Optional.ofNullable(e)
                 .map(Throwable::getMessage)
                 .orElse("接口请求异常")
@@ -89,11 +99,7 @@ public class JSONResponse {
      */
     public static JSONResponse error(MyException e) {
         //初始化
-        JSONResponse response = new JSONResponse();
-        //组装error
-        response.response.put(JSONConst.KEY_STATE, JSONConst.VALUE_ERROR);
-        response.response.put(JSONConst.KEY_CODE, 1);
-        response.response.put(JSONConst.KEY_PORT, ServiceInfo.STATIC_PORT);
+        JSONResponse response = errorBuild();
         //初始化错误体
         JSONObject errorBody;
         //如果是 开发人员场景抛出
@@ -101,8 +107,8 @@ public class JSONResponse {
             //初始化
             errorBody = new JSONObject();
             //组装
-            errorBody.put("code", MyExceptionEnum.NORMAL_ERROR.getCode());
-            errorBody.put("zhDesc", e.getZhDesc());
+            errorBody.put(JSONConst.KEY_CODE, MyExceptionEnum.NORMAL_ERROR.getCode());
+            errorBody.put(JSONConst.KEY_ZH_DESC, e.getZhDesc());
         }
         //默认用 对用户通用国际化枚举 处理
         else {
@@ -114,10 +120,16 @@ public class JSONResponse {
                     .orElse(MyExceptionEnum.NORMAL_ERROR)
                     //转为json
                     .toJSON();
-            //获取错误的key
-            errorBody.put("errorKey", Optional.ofNullable(e)
+            //获取错误的 key
+            errorBody.put(JSONConst.KEY_ERROR_KEY, Optional.ofNullable(e)
                     //获取错误key
                     .map(MyException::getErrorKey)
+                    //默认
+                    .orElse(null));
+            //获取错误的 valueList
+            errorBody.put(JSONConst.KEY_ERROR_VALUE_LIST, Optional.ofNullable(e)
+                    //获取错误key
+                    .map(MyException::getErrorValueList)
                     //默认
                     .orElse(null));
         }
