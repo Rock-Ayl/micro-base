@@ -38,7 +38,7 @@ public class MyException extends RuntimeException {
     }
 
     /**
-     * 通用-抛给用户,需要做国际化的异常(如密码格式、邮箱格式等错误),额外返回错误key
+     * 通用-抛给用户,需要做国际化的异常(如密码格式、邮箱格式等错误),额外返回错误 key
      *
      * @param myExceptionEnum 异常枚举
      * @param errorKey        错误key
@@ -49,7 +49,18 @@ public class MyException extends RuntimeException {
     }
 
     /**
-     * 通用-抛给用户,需要做国际化的异常(如密码格式、邮箱格式等错误),额外返回错误key
+     * 通用-抛给用户,需要做国际化的异常(如密码格式、邮箱格式等错误),额外返回错误 value
+     *
+     * @param myExceptionEnum 异常枚举
+     * @param errorValueList  错误的值列表
+     */
+    public <T, R> MyException(MyExceptionEnum myExceptionEnum, List<String> errorValueList) {
+        this(myExceptionEnum);
+        this.errorValueList = errorValueList;
+    }
+
+    /**
+     * 通用-抛给用户,需要做国际化的异常(如密码格式、邮箱格式等错误),额外返回错误 key + value
      *
      * @param myExceptionEnum 异常枚举
      * @param errorKey        错误key
