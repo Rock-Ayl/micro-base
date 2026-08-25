@@ -5,10 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * FastJson 扩展工具包
@@ -283,6 +280,116 @@ public class FastJsonExtraUtils {
                 }
             }
         }
+    }
+
+    /**
+     * 复制 目标json ,并仅保留 模版json 所拥有的 key
+     *
+     * @param srcJson      被复制的 目标json
+     * @param templateJson 返回的json只会拥有该 模版json 对应的key
+     * @return
+     */
+    public static JSONObject copyAndKeepTemplateKey(JSONObject srcJson, JSONObject templateJson) {
+        //判空
+        if (srcJson == null) {
+            //过
+            return null;
+        }
+        //判空
+        if (templateJson == null || srcJson.size() == 0) {
+            //默认
+            return new JSONObject();
+        }
+        //复制一个新的json
+        JSONObject copyJson = deepClone(srcJson, JSONObject.class);
+        //循环所有key
+        for (String copyKey : new ArrayList<>(copyJson.keySet())) {
+            //如果不存在该key
+            if (templateJson.containsKey(copyKey) == false) {
+                //删除之
+                copyJson.remove(copyKey);
+            }
+        }
+        //返回结果
+        return copyJson;
+    }
+
+    /**
+     * 删除 内容完全相同的key
+     *
+     * @param leftJson       左json
+     * @param rightJson      右json
+     * @param notIncludeSet  不包含set,如果key属于这个集合,则不会删除
+     * @param mustIncludeSet 必须包含set,如果key属于这个集合,则必须删除
+     */
+    public static void removeKeyWithSameValue(JSONObject leftJson,
+                                              JSONObject rightJson,
+                                              Set<String> notIncludeSet,
+                                              Set<String> mustIncludeSet) {
+
+        //判空
+        if (leftJson == null || rightJson == null) {
+            //过
+            return;
+        }
+
+        /**
+         * key 取 交集
+         */
+
+        //共有的key集合
+        Set<String> commonKeySet = new HashSet<>(leftJson.keySet());
+        //取交集
+        commonKeySet.retainAll(rightJson.keySet());
+
+        /**
+         * 删除 内容完全相同的key
+         */
+
+        //循环
+        for (String key : commonKeySet) {
+            //如果存在于不包含
+            if (notIncludeSet.contains(key) == true) {
+                //本轮过
+                continue;
+            }
+            //如果存在于必须包含
+            if (mustIncludeSet.contains(key) == true) {
+                //直接删除
+                leftJson.remove(key);
+                rightJson.remove(key);
+                //本轮过
+                continue;
+            }
+            //获取key
+            Object leftValue = leftJson.get(key);
+            Object rightValue = rightJson.get(key);
+            //如果值同一个引用,包括都为null的情况
+            if (leftValue == rightValue) {
+                //直接删除
+                leftJson.remove(key);
+                rightJson.remove(key);
+                //本轮过
+                continue;
+            }
+            //如果有一个为空
+            if (leftValue == null || rightValue == null) {
+                //本轮过
+                continue;
+            }
+            //二者转为string
+            String leftValueStr = toJSONString(leftValue);
+            String rightValueStr = toJSONString(rightValue);
+            //如果str相同
+            if (leftValueStr.equals(rightValueStr)) {
+                //直接删除
+                leftJson.remove(key);
+                rightJson.remove(key);
+                //本轮过
+                continue;
+            }
+        }
+
     }
 
     public static void main(String[] args) {
