@@ -18,25 +18,28 @@ public enum MyExceptionEnum {
      * 默认
      */
 
-    NORMAL_ERROR(50000, "出现异常", "Normal error"),
-    NORMAL_MUST_ROOT(50001, "只有管理员才能被允许操作", "Only administrators are allowed to operate"),
+    NORMAL_ERROR(50000, "系统开小差了，请稍后再试", "Something went wrong，please refresh the page or try again later."),
+    NORMAL_MUST_ROOT(50001, "您暂时无法访问此内容", "You don’t have permission to access this page."),
+    NORMAL_NO_PERMISSION(50002, "您暂无权限访问该资源", "You do not have permission to access this resource."),
+    SYSTEM_MAINTENANCE(50003, "系统正在维护中，请稍后再试", "The system is currently undergoing maintenance. Please try again later."),
 
     /**
      * 操作
      */
 
-    EXCEEDED_RETRY_ATTEMPTS(60000, "超出重试次数,请稍后重试", "Exceeded retry attempts, please try again later"),
-    OPERATION_DO_NOT_REPEAT(60005, "请勿重复操作", "Do not repeat the operation"),
+    EXCEEDED_RETRY_ATTEMPTS(60000, "操作太快了，请稍等一下再试", "You’re doing that a bit too fast. Please try again shortly"),
+    OPERATION_DO_NOT_REPEAT(60005, "该操作正在处理中，请稍等", "This action is already in progress. Please wait a moment."),
+    DATA_UPDATED_BY_OTHERS(60056, "操作的数据已被其他人更新，请刷新页面后重试", "The data has been updated by someone else. Please refresh the page and try again."),
 
     /**
      * 字符(character)
      */
 
-    CHARACTER_ERROR(60500, "字符异常", "Characters error"),
+    CHARACTER_ERROR(60500, "输入内容格式不正确，请检查后重新输入", "The input format is invalid. Please check and try again."),
 
-    CANNOT_EXCEED_100_CHARACTER(60801, "不能超过100个字符", "Cannot exceed 100 characters"),
+    CANNOT_EXCEED_100_CHARACTER(60801, "请输入 1–100 个字符", "Please enter 1–100 characters."),
 
-    CHARACTER_RANGE_6_20(61101, "请输入6-20个字符", "Please enter 6-20 characters"),
+    CHARACTER_RANGE_6_20(61101, "请输入 6–20 个字符", "Please enter 6–20 characters."),
 
     /**
      * 数字、金额
