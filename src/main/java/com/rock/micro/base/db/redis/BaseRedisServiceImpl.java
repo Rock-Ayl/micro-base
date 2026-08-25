@@ -39,7 +39,7 @@ public final class BaseRedisServiceImpl implements BaseRedisService {
     }
 
     @Override
-    public long getTime(String key) {
+    public Long getTime(String key) {
         return redisTemplate.getExpire(key, TimeUnit.SECONDS);
     }
 

@@ -24,7 +24,7 @@ public interface BaseRedisService {
      * @param key 键
      * @return 时间(秒)
      */
-    long getTime(String key);
+    Long getTime(String key);
 
     /**
      * 判断key是否存在
