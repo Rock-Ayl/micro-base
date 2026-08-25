@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * mongo 服务基底实现
+ * elastic search 服务基底实现
  *
  * @Author ayl
  * @Date 2022-03-09
@@ -41,7 +41,12 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     @Override
-    public void createIndex(Class<?> clazz) {
+    public void createIndexOrAppendMapping(Class<?> clazz) {
+
+        /**
+         * 如果不存在,直接创建
+         */
+
         //获取索引操作对象
         IndexOperations indexOperations = elasticsearchRestTemplate.indexOps(clazz);
         //如果不存在索引
@@ -50,7 +55,19 @@ public class BaseElasticSearchServiceImpl<T extends BaseIndex> implements BaseEl
             indexOperations.create();
             //写入映射
             indexOperations.putMapping();
+            //结束
+            return;
         }
+
+        /**
+         * 如果已存在,尝试更新
+         */
+
+        //根据实体类生成mapping
+        Document mapping = indexOperations.createMapping(clazz);
+        //写入mapping, 主要用于补充新增字段
+        indexOperations.putMapping(mapping);
+
     }
 
     @Override

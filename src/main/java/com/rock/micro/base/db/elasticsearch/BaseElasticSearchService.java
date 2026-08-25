@@ -22,9 +22,13 @@ import java.util.List;
 public interface BaseElasticSearchService<T extends BaseIndex> {
 
     /**
-     * 如果不存在索引,尝试创建
+     * 同步Elasticsearch索引mapping, 也就是索引字段结构
+     * -
+     * 如果索引不存在, 则创建索引并写入mapping
+     * 如果索引已存在, 则尝试追加新增字段mapping
+     * 如果已有字段类型, 分词器, 字段属性等发生不兼容变动, 则可能抛出异常(比如字段类型变动)
      */
-    void createIndex(Class<?> clazz);
+    void createIndexOrAppendMapping(Class<?> clazz);
 
     /**
      * 单个创建
@@ -117,8 +121,11 @@ public interface BaseElasticSearchService<T extends BaseIndex> {
         @ApiModelProperty("数据列表")
         private List<T> list;
 
-        @ApiModelProperty("聚合搜索内容(有待更新)")
+        @ApiModelProperty("聚合搜索内容-搜索结果")
         private AggregationsContainer aggregations;
+
+        @ApiModelProperty("聚合搜索内容-转换结果位置")
+        private Object aggResult;
 
     }
 
