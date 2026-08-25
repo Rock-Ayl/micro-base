@@ -4,6 +4,7 @@ import com.mongodb.bulk.BulkWriteInsert;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.bulk.BulkWriteUpsert;
 import com.rock.micro.base.data.BaseDocument;
+import com.rock.micro.base.db.mongo.BaseMongoService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
