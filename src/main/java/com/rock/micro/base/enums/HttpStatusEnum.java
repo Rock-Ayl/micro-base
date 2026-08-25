@@ -1,4 +1,4 @@
-package com.rock.micro.base.common.enums;
+package com.rock.micro.base.enums;
 
 import lombok.Getter;
 

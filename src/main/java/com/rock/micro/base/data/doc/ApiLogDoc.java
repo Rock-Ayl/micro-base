@@ -1,7 +1,6 @@
 package com.rock.micro.base.data.doc;
 
 import com.rock.micro.base.data.BaseDocument;
-import com.rock.micro.base.data.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -37,7 +36,10 @@ public class ApiLogDoc extends BaseDocument {
     @ApiModelProperty("请求url")
     private String url;
 
-    @ApiModelProperty("http请求方式[GET][POST]")
+    /**
+     * {@link com.rock.micro.base.enums.ApiLogHttpMethodEnum } 枚举
+     */
+    @ApiModelProperty("http请求方式 枚举")
     private String httpMethod;
 
     @ApiModelProperty("请求参数json字符串")
@@ -59,7 +61,29 @@ public class ApiLogDoc extends BaseDocument {
      * 用户信息
      */
 
-    @ApiModelProperty("创建用户")
-    private User createUser;
+    @ApiModelProperty("创建用户id")
+    private String createUserId;
+
+    @ApiModelProperty("创建用户名称")
+    private String createUserName;
+
+    @ApiModelProperty("创建用户邮箱")
+    private String createUserEmail;
+
+    /**
+     * 地理信息
+     */
+
+    @ApiModelProperty("国家-编码")
+    private String countryShort;
+
+    @ApiModelProperty("国家-名称")
+    private String countryLong;
+
+    @ApiModelProperty("州、省")
+    private String region;
+
+    @ApiModelProperty("城市")
+    private String city;
 
 }
