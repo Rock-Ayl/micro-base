@@ -1,5 +1,6 @@
 package com.rock.micro.base.db.mongo;
 
+import com.mongodb.bulk.BulkWriteResult;
 import com.rock.micro.base.data.BaseDocument;
 import com.rock.micro.base.util.ArrayExtraUtils;
 import com.rock.micro.base.util.LambdaParseFieldNameExtraUtils;
@@ -270,6 +271,17 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
 
     @Override
     public boolean updateSkipNullById(T document) {
+        //实现
+        return updateSkipNullById(document, false);
+    }
+
+    @Override
+    public boolean updateSkipNullById(T document, boolean enableUpdateDateCheck) {
+
+        /**
+         * 通用校验
+         */
+
         //判空
         if (document == null) {
             //过
@@ -282,8 +294,31 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
             //过
             return false;
         }
+
+        /**
+         * 组装查询条件
+         */
+
         //限制条件
-        Query query = MongoExtraUtils.initQueryAndBase(id);
+        Query query;
+        //如果开启更新时间检查
+        if (enableUpdateDateCheck == true) {
+            //如果没有更新时间
+            if (document.getUpdateDate() == null) {
+                //过
+                return false;
+            }
+            //根据id+更新时间
+            query = MongoExtraUtils.initQueryAndBase(id, document.getUpdateDate());
+        } else {
+            //只根据id
+            query = MongoExtraUtils.initQueryAndBase(id);
+        }
+
+        /**
+         * 更新条件、及实现
+         */
+
         //更新
         Update update = MongoExtraUtils.initUpDateAndBase();
         //组装更新字段
@@ -293,11 +328,17 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
     }
 
     @Override
-    public boolean batchUpdateSkipNullById(Collection<T> documentList) {
+    public BulkWriteResult batchUpdateSkipNullById(Collection<T> documentList) {
+        //实现
+        return batchUpdateSkipNullById(documentList, false);
+    }
+
+    @Override
+    public BulkWriteResult batchUpdateSkipNullById(Collection<T> documentList, boolean enableUpdateDateCheck) {
         //判空
         if (CollectionUtils.isEmpty(documentList)) {
             //过
-            return false;
+            return MongoExtraUtils.defaultBulkWriteResult();
         }
         //更新数量
         int count = 0;
@@ -314,8 +355,21 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
                 //本轮过
                 continue;
             }
-            //初始化查询
-            Query query = MongoExtraUtils.initQueryAndBase(id);
+            //限制条件
+            Query query;
+            //如果开启更新时间检查
+            if (enableUpdateDateCheck == true) {
+                //如果没有更新时间
+                if (document.getUpdateDate() == null) {
+                    //本轮过
+                    continue;
+                }
+                //根据id+更新时间
+                query = MongoExtraUtils.initQueryAndBase(id, document.getUpdateDate());
+            } else {
+                //只根据id
+                query = MongoExtraUtils.initQueryAndBase(id);
+            }
             //初始化更新
             Update update = MongoExtraUtils.initUpDateAndBase();
             //组装批量更新
@@ -328,12 +382,12 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
         //如果有更新
         if (count > 0) {
             //批量更新
-            bulkOperations.execute();
-            //成功
-            return true;
+            BulkWriteResult result = bulkOperations.execute();
+            //返回结果
+            return result;
         }
-        //默认失败
-        return false;
+        //过
+        return MongoExtraUtils.defaultBulkWriteResult();
     }
 
     @Override
@@ -425,12 +479,12 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
         //如果要限制id 1
         if (CollectionUtils.isNotEmpty(idsList)) {
             //限制id
-            criteriaList.add(Criteria.where("_id").in(idsList));
+            criteriaList.add(Criteria.where(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId)).in(idsList));
         }
         //如果要限制id 2
         if (CollectionUtils.isNotEmpty(param.getIdList())) {
             //限制id
-            criteriaList.add(Criteria.where("_id").in(param.getIdList()));
+            criteriaList.add(Criteria.where(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId)).in(param.getIdList()));
         }
 
         /**
@@ -524,18 +578,65 @@ public class BaseMongoServiceImpl<T extends BaseDocument> implements BaseMongoSe
          * 排序
          */
 
-        //如果没有指定
+        //如果没有指定排序,尝试用传参排序
         if (sort == null) {
-            //排序key,默认更新时间
-            String sortKey = Optional.ofNullable(param)
-                    .map(MongoRollPageParam::getSortKey)
-                    .orElse("updateDate");
-            //排序方式,默认倒序
-            String sortOrder = Optional.ofNullable(param)
-                    .map(MongoRollPageParam::getSortOrder)
-                    .orElse("desc");
-            //默认使用参数排序
-            sort = Sort.by(Sort.Direction.fromString(sortOrder), sortKey);
+
+            /**
+             * 排序-优先级最高-排序列表
+             */
+
+            //多字段排序参数列表
+            List<MongoRollPageSortParam> sortList = Optional.ofNullable(param)
+                    .map(MongoRollPageParam::getSortList)
+                    .orElse(null);
+            //如果有内容
+            if (CollectionUtils.isNotEmpty(sortList)) {
+                //初始化
+                List<Sort.Order> orderList = new ArrayList<>();
+                //循环
+                for (MongoRollPageSortParam sortParam : sortList) {
+                    //判空
+                    if (sortParam == null) {
+                        //本轮过
+                        continue;
+                    }
+                    //获取排序key
+                    String sortKey = sortParam.getSortKey();
+                    //获取排序方式
+                    String sortOrder = sortParam.getSortOrder();
+                    //判空
+                    if (StringUtils.isAnyBlank(sortKey, sortOrder)) {
+                        //本轮过
+                        continue;
+                    }
+                    //记录
+                    orderList.add(new Sort.Order(Sort.Direction.fromString(sortOrder), sortKey));
+                }
+                //如果有排序
+                if (CollectionUtils.isNotEmpty(orderList)) {
+                    //使用多字段排序
+                    sort = Sort.by(orderList);
+                }
+            }
+
+            /**
+             * 排序-优先级次之-单个排序
+             */
+
+            //如果没有指定多字段排序
+            if (sort == null) {
+                //排序key,默认id(创建时间)
+                String sortKey = Optional.ofNullable(param)
+                        .map(MongoRollPageParam::getSortKey)
+                        .orElse(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId));
+                //排序方式,默认倒序
+                String sortOrder = Optional.ofNullable(param)
+                        .map(MongoRollPageParam::getSortOrder)
+                        .orElse("desc");
+                //默认使用参数排序
+                sort = Sort.by(Sort.Direction.fromString(sortOrder), sortKey);
+            }
+
         }
 
         /**

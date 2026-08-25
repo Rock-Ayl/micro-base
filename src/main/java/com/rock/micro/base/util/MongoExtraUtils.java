@@ -1,11 +1,16 @@
 package com.rock.micro.base.util;
 
+import com.mongodb.bulk.BulkWriteInsert;
+import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.bulk.BulkWriteUpsert;
 import com.rock.micro.base.data.BaseDocument;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -179,7 +184,24 @@ public class MongoExtraUtils {
     public static Query initQueryAndBase(String id) {
         //限制条件
         Query query = new Query(Criteria
-                .where("_id").is(id)
+                .where(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId)).is(id)
+        );
+        //返回
+        return query;
+    }
+
+    /**
+     * 为 mongo Query 操作 初始化一个关于基类的 {@link Query}
+     *
+     * @param id         主键id
+     * @param updateDate 更新时间
+     * @return
+     */
+    public static Query initQueryAndBase(String id, Date updateDate) {
+        //限制条件
+        Query query = new Query(Criteria
+                .where(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId)).is(id)
+                .and(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getUpdateDate)).is(updateDate)
         );
         //返回
         return query;
@@ -194,7 +216,7 @@ public class MongoExtraUtils {
     public static Query initQueryAndBase(Collection<String> idList) {
         //限制条件
         Query query = new Query(Criteria
-                .where("_id").in(idList)
+                .where(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId)).in(idList)
         );
         //返回
         return query;
@@ -210,7 +232,7 @@ public class MongoExtraUtils {
         Update update = new Update();
 
         //固定更新最后更新时间
-        update.set("updateDate", new Date());
+        update.set(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getUpdateDate), new Date());
 
         //返回实体
         return update;
@@ -228,19 +250,44 @@ public class MongoExtraUtils {
         Update update = new Update();
 
         //仅创建唯一id
-        update.setOnInsert("_id", id);
+        update.setOnInsert(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId), id);
         //仅创建创建时间
-        update.setOnInsert("createDate", new Date());
+        update.setOnInsert(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getCreateDate), new Date());
         //仅创建是否删除
         update.setOnInsert("del", false);
         //映射class
         update.setOnInsert("_class", clazz.getName());
 
         //固定创建或更新最后更新时间
-        update.set("updateDate", new Date());
+        update.set(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getUpdateDate), new Date());
 
         //返回实体
         return update;
+    }
+
+    /**
+     * 根据分页条件,初始化一个分页条件的 {@link  FacetOperation}
+     * 注:自己保证翻页参数的准确性
+     *
+     * @param pageNum  页码
+     * @param pageSize 单页数据量
+     * @return
+     */
+    public static FacetOperation initRollPageFacet(int pageNum, int pageSize) {
+        //获取key
+        String totalKey = LambdaParseFieldNameExtraUtils.getMongoColumn(BaseMongoService.RollPageResult<Object>::getTotal);
+        String listKey = LambdaParseFieldNameExtraUtils.getMongoColumn(BaseMongoService.RollPageResult<Object>::getList);
+        //分页+返回count
+        return Aggregation.facet()
+                //分页列表
+                .and(
+                        Aggregation.skip((pageNum - 1L) * pageSize),
+                        Aggregation.limit(pageSize)
+                ).as(listKey)
+                //返回count
+                .and(
+                        Aggregation.count().as(totalKey)
+                ).as(totalKey);
     }
 
     /**
@@ -330,10 +377,12 @@ public class MongoExtraUtils {
                 }
                 //过滤掉一些特殊的
                 switch (fieldName) {
-                    //一定不需要更新的
+                    //预留字段,一定不会更新
                     case "id":
                     case "serialVersionUID":
                     case "createDate":
+                    case "updateDate":
+                    case "del":
                         continue;
                         //其他过
                     default:
@@ -384,6 +433,88 @@ public class MongoExtraUtils {
         }
         //返回
         return keyword;
+    }
+
+    /**
+     * 返回一个默认的 {@link BulkWriteResult} 实例
+     * -
+     * 用于无实际批量写入操作时，返回一个空结果对象。
+     */
+    public static BulkWriteResult defaultBulkWriteResult() {
+        //初始化
+        return new BulkWriteResult() {
+
+            /**
+             * 是否收到 MongoDB 服务端确认
+             *
+             * @return true
+             */
+            @Override
+            public boolean wasAcknowledged() {
+                return true;
+            }
+
+            /**
+             * 插入数量
+             *
+             * @return 0
+             */
+            @Override
+            public int getInsertedCount() {
+                return 0;
+            }
+
+            /**
+             * 匹配到的文档数量
+             *
+             * @return 0
+             */
+            @Override
+            public int getMatchedCount() {
+                return 0;
+            }
+
+            /**
+             * 删除数量
+             *
+             * @return 0
+             */
+            @Override
+            public int getDeletedCount() {
+                return 0;
+            }
+
+            /**
+             * 实际修改数量
+             *
+             * @return 0
+             */
+            @Override
+            public int getModifiedCount() {
+                return 0;
+            }
+
+            /**
+             * 插入数据列表
+             *
+             * @return 空集合
+             */
+            @Override
+            public List<BulkWriteInsert> getInserts() {
+                return Collections.emptyList();
+            }
+
+            /**
+             * Upsert数据列表
+             *
+             * @return 空集合
+             */
+            @Override
+            public List<BulkWriteUpsert> getUpserts() {
+                return Collections.emptyList();
+            }
+
+        };
     }
 
 }

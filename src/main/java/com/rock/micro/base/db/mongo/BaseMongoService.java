@@ -1,5 +1,6 @@
 package com.rock.micro.base.db.mongo;
 
+import com.mongodb.bulk.BulkWriteResult;
 import com.rock.micro.base.data.BaseDocument;
 import com.rock.micro.base.util.LambdaParseFieldNameExtraUtils;
 import io.swagger.annotations.ApiModel;
@@ -197,12 +198,30 @@ public interface BaseMongoService<T extends BaseDocument> {
     boolean updateSkipNullById(T document);
 
     /**
+     * 根据实体,使用id,更新单个实体,跳过NULL的字段
+     *
+     * @param document              实体
+     * @param enableUpdateDateCheck 开启,检查updateDate是否过期
+     * @return
+     */
+    boolean updateSkipNullById(T document, boolean enableUpdateDateCheck);
+
+    /**
      * 根据实体列表,使用id,批量更新多个实体,跳过NULL的字段
      *
      * @param documentList 实体列表
      * @return
      */
-    boolean batchUpdateSkipNullById(Collection<T> documentList);
+    BulkWriteResult batchUpdateSkipNullById(Collection<T> documentList);
+
+    /**
+     * 根据实体列表,使用id,批量更新多个实体,跳过NULL的字段
+     *
+     * @param documentList          实体列表
+     * @param enableUpdateDateCheck 开启,检查updateDate是否过期
+     * @return
+     */
+    BulkWriteResult batchUpdateSkipNullById(Collection<T> documentList, boolean enableUpdateDateCheck);
 
     /**
      * 根据实体,使用id,创建或更新实体,跳过NULL的字段
@@ -282,12 +301,28 @@ public interface BaseMongoService<T extends BaseDocument> {
         @ApiModelProperty("排序-正序 or 倒序 [desc][asc]")
         private String sortOrder;
 
+        @ApiModelProperty("排序-列表(优先级高于sortKey/sortOrder)")
+        private List<MongoRollPageSortParam> sortList;
+
         /**
          * 限制返回字段
          */
 
         @ApiModelProperty("限制返回字段 eg: id,name,sku,tags")
         private String fields;
+
+    }
+
+    @Getter
+    @Setter
+    @ApiModel("Mongo常用模板排序参数")
+    public static class MongoRollPageSortParam {
+
+        @ApiModelProperty("排序-key")
+        private String sortKey;
+
+        @ApiModelProperty("排序-正序 or 倒序 [desc][asc]")
+        private String sortOrder;
 
     }
 
