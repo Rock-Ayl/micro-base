@@ -254,8 +254,6 @@ public class MongoExtraUtils {
         update.setOnInsert(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getId), id);
         //仅创建创建时间
         update.setOnInsert(LambdaParseFieldNameExtraUtils.getMongoColumn(BaseDocument::getCreateDate), new Date());
-        //仅创建是否删除
-        update.setOnInsert("del", false);
         //映射class
         update.setOnInsert("_class", clazz.getName());
 
@@ -383,7 +381,6 @@ public class MongoExtraUtils {
                     case "serialVersionUID":
                     case "createDate":
                     case "updateDate":
-                    case "del":
                         continue;
                         //其他过
                     default:

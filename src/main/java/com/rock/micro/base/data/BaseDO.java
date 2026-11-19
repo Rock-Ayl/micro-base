@@ -29,9 +29,6 @@ public class BaseDO implements Serializable {
     @ApiModelProperty("最后修改时间")
     private Date updateDate;
 
-    @ApiModelProperty("状态删除字段")
-    private boolean del;
-
     /**
      * 给新增数据的基底赋予基础数据
      *
